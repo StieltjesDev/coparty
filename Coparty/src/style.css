@@ -1,0 +1,34 @@
+/* Reset básico para garantir consistência */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* O site inteiro ocupa a tela */
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: Arial, sans-serif;
+}
+
+/* Responsividade automática */
+.container {
+  max-width: 1200px;   /* limite em desktops */
+  margin: 0 auto;      /* centraliza */
+  padding: 1rem;       /* espaço interno */
+}
+
+/* Inputs, botões e selects por padrão responsivos */
+input, button, select, textarea {
+  width: 100%;         /* sempre ocupar largura do pai */
+  max-width: 100%;     /* nunca ultrapassar */
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.input-group {
+  margin-bottom: 1rem;
+}
+
