@@ -1,98 +1,69 @@
-<script setup>
-import { ref } from 'vue'
-import SuccessButton from './buttons/SuccessButton.vue'
-
-const email = ref('')
-const senha = ref('')
-const errors = ref({})
-
-// Validação simples
-function validate() {
-  errors.value = {}
-
-  if (!email.value) {
-    errors.value.email = 'O e-mail é obrigatório.'
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    errors.value.email = 'Digite um e-mail válido.'
-  }
-
-  if (!senha.value) {
-    errors.value.senha = 'A senha é obrigatória.'
-  } else if (senha.value.length < 6) {
-    errors.value.senha = 'A senha deve ter pelo menos 6 caracteres.'
-  }
-
-  return Object.keys(errors.value).length === 0
-}
-
-// Submeter formulário
-function submitForm() {
-  if (!validate()) return
-
-  const usuario = {
-    email: email.value,
-    senha: senha.value
-  }
-
-  console.log('Tentando login com:', usuario)
-  alert('Login realizado com sucesso!')
-
-  // Limpa os campos
-  email.value = ''
-  senha.value = ''
-}
-</script>
-
 <template>
-  <div class="container">
-    <form @submit.prevent="submitForm" class="login-form">
-      <h2>Login</h2>
-      <!-- E-mail -->
-      <div class="input-group">
-        <label for="email">E-mail:</label>
-        <input
-          id="email"
-          v-model="email"
-          type="email"
-          placeholder="Digite seu e-mail"
-        />
-        <p v-if="errors.email" class="error">{{ errors.email }}</p>
-      </div>
+  <div class="flex justify-content-center align-items-center">
+    <div class="card p-4 shadow-2 border-round-lg w-25rem">
+      <h2 class="text-center mb-4">Login</h2>
 
-      <!-- Senha -->
-      <div class="input-group">
-        <label for="senha">Senha:</label>
-        <input
-          id="senha"
-          v-model="senha"
-          type="password"
-          placeholder="Digite sua senha"
-        />
-        <p v-if="errors.senha" class="error">{{ errors.senha }}</p>
-      </div>
+      <form @submit.prevent="login">
+        <!-- E-mail -->
+        <div class="mb-3">
+          <label for="email" class="block mb-2">E-mail</label>
+          <InputText
+            id="email"
+            v-model="form.email"
+            type="email"
+            class="w-full"
+            placeholder="Digite seu e-mail"
+            required
+          />
+        </div>
 
-      <!-- Botão -->
-      <SuccessButton>Entrar</SuccessButton>
-    </form>
+        <!-- Senha -->
+        <div class="mb-3">
+          <label for="password" class="block mb-2">Senha</label>
+          <Password
+            id="password"
+            v-model="form.password"
+            placeholder="Digite sua senha"
+            toggleMask
+            feedback="false"
+            class="w-full"
+            required
+          />
+        </div>
+
+        <!-- Botão -->
+        <Button
+          type="submit"
+          label="Entrar"
+          icon="pi pi-sign-in"
+          class="w-full mt-3"
+        />
+      </form>
+    </div>
   </div>
 </template>
 
-<style scoped>
-h2 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
 
-.container {
-  max-width: 400px;
-  margin: auto;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
+<script>
+import InputText from 'primevue/inputtext'
+import Password from 'primevue/password'
+import Button from 'primevue/button'
 
-.error {
-  color: red;
-  font-size: 0.9rem;
+export default {
+  components: { InputText, Password, Button },
+  data() {
+    return {
+      form: {
+        email: '',
+        password: ''
+      }
+    }
+  },
+  methods: {
+    login() {
+      console.log('Tentando login com:', this.form)
+      // Aqui você chamaria sua API de autenticação
+    }
+  }
 }
-</style>
+</script>
