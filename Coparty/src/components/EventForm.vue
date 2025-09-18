@@ -1,110 +1,58 @@
-<script setup>
-import { ref } from 'vue'
-
-const nomeEvento = ref('')
-const jogo = ref('')
-const errors = ref({})
-
-// Opções de exemplo para o select
-const jogos = [
-  { value: '1', label: 'Gigante Duas Cabeças' }
-]
-
-// Função de validação
-function validate() {
-  errors.value = {}
-
-  if (nomeEvento.value.trim().length < 3) {
-    errors.value.nomeEvento = 'O nome deve ter pelo menos 3 caracteres.'
-  } else if (nomeEvento.value.trim().length > 50) {
-    errors.value.nomeEvento = 'O nome deve ter no máximo 50 caracteres.'
-  }
-
-  if (!jogo.value) {
-    errors.value.jogo = 'Selecione um jogo.'
-  }
-
-  return Object.keys(errors.value).length === 0
-}
-
-// Função de submit
-function submitForm() {
-  if (!validate()) return
-
-  const novoEvento = {
-    nome: nomeEvento.value,
-    jogo: jogo.value
-  }
-
-  console.log('Evento criado:', novoEvento)
-  alert('Evento criado com sucesso!')
-
-  // Limpar formulário
-  nomeEvento.value = ''
-  jogo.value = ''
-}
-</script>
-
 <template>
-  <form @submit.prevent="submitForm" class="form-container">
-    <!-- Nome do Evento -->
-    <div class="form-group">
-      <label for="nomeEvento">Nome do Evento:</label>
-      <input
-        id="nomeEvento"
-        v-model="nomeEvento"
-        type="text"
-        placeholder="Digite o nome do evento"
-      />
-      <p v-if="errors.nomeEvento" class="error">{{ errors.nomeEvento }}</p>
-    </div>
+  <div class="flex justify-content-center align-items-center">
+    <div class="card p-4 shadow-8 border-round-lg w-30rem h-30rem m-auto">
+      <h2 class="text-center mb-4">Criar Evento</h2>
 
-    <!-- Jogo -->
-    <div class="form-group">
-      <label for="jogo">Jogo:</label>
-      <select id="jogo" v-model="jogo">
-        <option disabled value="">Selecione um jogo</option>
-        <option v-for="option in jogos" :key="option.value" :value="option.value">
-          {{ option.label }}
-        </option>
-      </select>
-      <p v-if="errors.jogo" class="error">{{ errors.jogo }}</p>
-    </div>
+      <form @submit.prevent="onFormeSubmit">
+        <!-- Nome do Evento -->
+        <div class="mb-3">
+          <FloatLabel variant="on">
+            <InputText fluid id="name" v-model="form.name" required />
+            <label for="name">Nome</label>
+          </FloatLabel>
+        </div>
 
-    <!-- Data -->
-    <div class="form-group">
-      <label for="dataEvento">Data do Evento:</label>
-      <input id="dataEvento" v-model="dataEvento" type="date" />
-      <p v-if="errors.dataEvento" class="error">{{ errors.dataEvento }}</p>
-    </div>
+        <!-- Senha -->
+        <div class="mb-3">
+          <FloatLabel variant="on">
+            <Password fluid id="password" v-model="form.password" toggleMask :feedback="false" required />
+            <label for="password">Senha</label>
+          </FloatLabel>
 
-    <!-- Hora -->
-    <div class="form-group">
-      <label for="horaEvento">Hora do Evento:</label>
-      <input id="horaEvento" v-model="horaEvento" type="time" />
-      <p v-if="errors.horaEvento" class="error">{{ errors.horaEvento }}</p>
-    </div>
 
-    <!-- Botão -->
-    <button type="submit">Criar Evento</button>
-  </form>
+        </div>
+
+        <!-- Botão -->
+        <Button type="submit" label="Entrar" icon="pi pi-sign-in" class="w-full mt-3" />
+      </form>
+    </div>
+  </div>
 </template>
 
-<style scoped>
-.form-container {
-  max-width: 400px;
-  margin: auto;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
 
-.form-group {
-  margin-bottom: 1rem;
-}
+<script>
+import InputText from 'primevue/inputtext'
+import Password from 'primevue/password'
+import Button from 'primevue/button'
+import FloatLabel from 'primevue/floatlabel';
 
-.error {
-  color: red;
-  font-size: 0.9rem;
+
+export default {
+  components: { InputText, Password, Button, FloatLabel },
+  data() {
+    return {
+      form: {
+        name: '',
+        description: '',
+        date: new Date().toISOString(),
+      }
+    }
+  },
+  methods: {
+    onFormeSubmit() {
+      console.log('Tentando login com:', this.form)
+      // Aqui você chamaria sua API de autenticação
+    }
+  }
 }
-</style>
+</script>

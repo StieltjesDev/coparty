@@ -4,7 +4,8 @@
     <header class="app-header">
       <nav>
         <router-link to="/">Login</router-link> |
-        <router-link to="/evento">Criar Evento</router-link>
+        <router-link to="/evento">Criar Evento</router-link> |
+        <router-link to="/signup">Cadastrar</router-link>
       </nav>
     </header>
 
