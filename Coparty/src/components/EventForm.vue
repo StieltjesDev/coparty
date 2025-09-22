@@ -22,6 +22,7 @@
 
         <div class="grid mb-3">
           <div class="col-6">
+            <!-- Modo de Jogo -->
             <FloatLabel variant="on">
               <Select fluid v-model="form.gameMode" inputId="gamemode" :options="getGamesModes()" optionValue="code"
                 optionLabel="name" required />
@@ -29,6 +30,7 @@
             </FloatLabel>
           </div>
           <div class="col-6">
+            <!-- Tipos Pareamento de Jogo -->
             <FloatLabel variant="on">
               <Select fluid v-model="form.paringMode" inputId="paring" :options="getParingModes()" optionValue="code"
                 optionLabel="name" required />
@@ -39,12 +41,14 @@
 
         <div class="grid mb-3">
           <div class="col-6">
+            <!-- Data do Evento -->
             <FloatLabel variant="on">
               <DatePicker inputId="date" v-model="form.date" dateFormat="dd/mm/yy" showIcon fluid iconDisplay="input" required />
               <label for="date">Data</label>
             </FloatLabel>
           </div>
           <div class="col-6">
+            <!-- Hora do Evento -->
             <FloatLabel variant="on">
               <DatePicker v-model="form.time" showIcon fluid iconDisplay="input" timeOnly required>
                 <template #inputicon="slotProps">
