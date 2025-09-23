@@ -5,9 +5,9 @@ class Event {
     description = "",
     date = "",       // pode ser string ou Date
     time = "",       // string ou Date
-    paringMode = "manual",  // ou outro modo
-    gameMode = "standard",  // ou outro modo
-    status = "scheduled",   // scheduled, ongoing, finished
+    paringMode = 0,  // ou outro modo
+    gameMode = 0,  // ou outro modo
+    status = 0,   // scheduled, ongoing, finished
     players = []            // array de Player
   } = {}) {
     this.id = id;
