@@ -16,24 +16,26 @@ class GameModeStats {
   }
 
   getTiebraker1() {
-    if (this.getTotalgameplayed === 0) return 0;
+    if (this.getTotalgameplayed == 0) return 0;
     return (this.win + 0.5 * this.tie) / this.getTotalgameplayed;
   }
 
   getTiebraker2() {
-    if (this.getTotalgameplayed === 0) return 0;
+    if (this.getTotalgameplayed == 0) return 0;
     return this.win / this.getTotalgameplayed;
   }
 
   getTiebraker3() {
-    if (this.getTotalgameplayed === 0) return 0;
+    if (this.getTotalgameplayed == 0) return 0;
     return this.win - this.losse;
   }
 
   getTiebrakers() {
-    this.tiebraker1 = this.getTiebraker1();
-    this.tiebraker2 = this.getTiebraker2();
-    this.tiebraker3 = this.getTiebraker3();
+    return {
+      tiebraker1: this.getTiebraker1(),
+      tiebraker2: this.getTiebraker2(),
+      tiebraker3: this.getTiebraker3(),
+    };
   }
 
 
