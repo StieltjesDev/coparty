@@ -2,11 +2,7 @@
   <div id="app">
     <!-- Nav -->
     <header class="app-header">
-      <nav>
-        <router-link to="/">Login</router-link> |
-        <router-link to="/evento">Criar Evento</router-link> |
-        <router-link to="/signup">Cadastrar</router-link>
-      </nav>
+      <NavBar />
     </header>
 
     <!-- Conteúdo (Login, Evento, etc.) -->
@@ -61,3 +57,7 @@ html, body {
   flex-shrink: 0;
 }
 </style>
+
+<script setup>
+  import NavBar from "./views/NavBar.vue"
+</script>

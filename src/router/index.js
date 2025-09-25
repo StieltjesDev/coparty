@@ -7,8 +7,9 @@ import EventForm from '../components/EventForm.vue'
 import Signup from '../components/Signup.vue'
 
 const routes = [
-  { path: '/', name: 'Login', component: LoginForm },
-  { path: '/evento', name: 'Evento', component: EventForm },
+  { path: '/', name: 'Home', component: LoginForm },
+  { path: '/create', name: 'Evento', component: EventForm },
+  { path: '/login', name: 'Login', component: LoginForm },
   { path: '/signup', name: 'Signup', component: Signup }
 ]
 
