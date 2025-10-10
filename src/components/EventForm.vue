@@ -61,7 +61,7 @@
         </div>
 
         <!-- Botão -->
-        <Button type="submit" label="Criar Evento" class="w-full mt-3" />
+        <Button type="submit" :loading="loading" label="Criar Evento" class="w-full mt-3" />
       </form>
     </div>
   </div>
@@ -76,6 +76,7 @@ import FloatLabel from 'primevue/floatlabel';
 import Textarea from 'primevue/textarea';
 import Select from 'primevue/select';
 import DatePicker from 'primevue/datepicker';
+import api from '@/api'
 
 
 
@@ -90,26 +91,70 @@ export default {
         time: null,
         paringMode: null,
         gameMode: null,
-      }
+      },
+      loading: false,
+      errorMessage: ''
     }
   },
   methods: {
-    onFormeSubmit() {
-      console.log('Tentando login com:', this.form)
-      // Aqui você chamaria sua API de autenticação
+    async onFormeSubmit() {
+      this.loading = true
+      this.errorMessage = ''
+
+      try {
+        const { date, time } = this.form;
+        const combined = new Date(date);
+        combined.setHours(time.getHours());
+        const data = {
+          name: this.form.name,
+          description: this.form.description,
+          dateTime: combined.toISOString(),
+          paring: this.form.paringMode,
+          gamemode: this.form.gameMode,
+        }
+        await api.post('/events/', data)
+        this.$toast.add({
+          severity: 'success',
+          summary: 'Evento criado!',
+          detail: 'Seu evento foi criado com sucesso!',
+          life: 3000
+        })
+        // redireciona (caso use vue-router)
+        this.$router.push('/events')
+      } catch (e) {
+        this.$toast.add({
+          severity: 'error',
+          summary: 'Erro ao Criar Evento',
+          detail: "Erro ao criar evento. Tente novamente mais tarde.",
+          life: 3000
+        })
+        console.error(e)
+      } finally {
+        this.loading = false
+      }
     },
     getGamesModes() {
       return [
-        { name: 'Casual', code: '1' },
-        { name: 'Competitivo', code: '2' },
-        { name: 'Ranqueado', code: '3' }
+        { name: 'Commander 15', code: 'commander15' },
+        { name: 'Commander 250', code: 'commander250' },
+        { name: 'Commander 500', code: 'commander500' },
+        { name: 'Commander Bracket 2', code: 'commander2' },
+        { name: 'Padrão', code: 'standard' },
+        { name: 'Moderno', code: 'modern' },
+        { name: 'Pioneer', code: 'pioneer' },
+        { name: 'Pauper', code: 'pauper' },
+        { name: 'Legacy', code: 'legacy' },
+        { name: 'Vintage', code: 'vintage' },
+        { name: 'Selado', code: 'sealed' },
+        { name: 'Draft', code: 'draft' }
       ];
     },
     getParingModes() {
       return [
-        { name: 'Simples', code: '1' },
-        { name: 'Dupla', code: '2' },
-        { name: 'Tripla', code: '3' }
+        { name: 'Suiço', code: 'swiss' },
+        { name: 'Todos Enfrentam Todos', code: 'round-robin' },
+        { name: 'Eliminatorio', code: 'single-elimination' },
+        { name: 'Eliminatorio Duplo', code: 'double-elimination' }
       ];
     }
   }

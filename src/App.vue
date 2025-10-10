@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <!-- Toast global -->
+    <Toast />
+
     <!-- Nav -->
     <header class="app-header">
       <NavBar />
@@ -12,7 +15,7 @@
 
     <!-- Rodapé -->
     <footer class="app-footer">
-      <p>© 2025 Meu Sistema</p>
+      <p>© 2025 Coparty</p>
     </footer>
   </div>
 </template>
@@ -60,4 +63,5 @@ html, body {
 
 <script setup>
   import NavBar from "./views/NavBar.vue"
+  import Toast from 'primevue/toast'
 </script>

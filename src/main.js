@@ -6,10 +6,11 @@ import PrimeVue from 'primevue/config'
 import Aura from '@primeuix/themes/aura'          // tema Aura do PrimeVue     // estilos base do PrimeVue
 import 'primeicons/primeicons.css'
 import 'primeflex/primeflex.css'
-
+import ToastService from 'primevue/toastservice';
 
 const app = createApp(App);
 app.use(router);
+app.use(ToastService)
 app.use(PrimeVue, {
     theme: {
         preset: Aura

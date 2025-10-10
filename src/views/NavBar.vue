@@ -9,9 +9,8 @@
 
     <!-- Ícones à DIREITA -->
     <div class="flex items-center gap-3">
-      <Button icon="pi pi-bell" severity="contrast" rounded variant="outlined" class="icon-btn" />
-      <Button icon="pi pi-user" severity="contrast" rounded variant="outlined" class="icon-btn" />
-      <Button icon="pi pi-moon" severity="contrast" rounded variant="outlined" class="icon-btn" />
+      <!-- <Button icon="pi pi-bell" severity="contrast" rounded variant="outlined" class="icon-btn" /> -->
+      <Button icon="pi pi-user" v-on:click="$router.push('/perfil')" severity="contrast" rounded variant="outlined" class="icon-btn" />
     </div>
   </nav>
 </template>
@@ -21,10 +20,10 @@ import Button from 'primevue/button'
 </script>
 
 <style>
-
 .justify-between {
   justify-content: space-between;
 }
+
 /* LINKS DO MENU */
 .nav-link {
   color: white;
