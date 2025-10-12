@@ -3,7 +3,7 @@
     <!-- Links à ESQUERDA -->
     <div class="flex items-center gap-6">
       <RouterLink to="/" class="nav-link">Home</RouterLink>
-      <RouterLink to="/events" class="nav-link">My Events</RouterLink>
+      <RouterLink to="/" class="nav-link">My Events</RouterLink>
       <RouterLink to="/create" class="nav-link">Create Event</RouterLink>
     </div>
 

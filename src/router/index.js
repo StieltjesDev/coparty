@@ -5,7 +5,8 @@ import LoginForm from '../components/LoginForm.vue'
 import EventForm from '../components/EventForm.vue'
 import Signup from '../components/Signup.vue'
 import EventList from '../components/EventList.vue'
-import DeckForm from '../components/DeckForm.vue'
+import DeckForm from '../components/decks/DeckForm.vue'
+import DeckList from '../components/decks/DeckList.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: EventList },
@@ -13,6 +14,7 @@ const routes = [
   { path: '/edit/:id', name: 'Editar Evento', component: EventForm, meta: { requiresAuth: true } },
   { path: '/decks/create', name: 'Criar Deck', component: DeckForm, meta: { requiresAuth: true } },
   { path: '/decks/edit/:id', name: 'Editar Deck', component: DeckForm, meta: { requiresAuth: true } },
+  { path: '/decks', name: 'Decks', component: DeckList, meta: { requiresAuth: true } },
   { path: '/login', name: 'Login', component: LoginForm },
   { path: '/signup', name: 'Signup', component: Signup }
 ]
