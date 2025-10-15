@@ -1,110 +1,108 @@
 <template>
-  <div class="flex justify-content-center align-items-center">
-    <div class="card p-4 shadow-8 border-round-lg">
-      <h2 class="text-center mb-4">Cadastrar</h2>
+  <div class="flex justify-content-center align-items-center p-3">
+    <Card class="sm:w-full shadow-4">
+      <template #title>
+        <h2 class="text-center mb-4">Cadastrar</h2>
+      </template>
 
-      <form @submit.prevent="onFormeSubmit">
-        <!-- E-mail -->
-        <div class="mb-3">
-          <FloatLabel variant="on">
-            <InputText
-              fluid
-              id="email"
-              v-model="form.email"
-              type="email"
-              required
-            />
-            <label for="email">E-mail</label>
-          </FloatLabel>
+      <template #content>
+        <form @submit.prevent="onFormeSubmit">
+          <!-- E-mail -->
+          <div class="mb-3">
+            <FloatLabel variant="on">
+              <InputText
+                fluid
+                id="email"
+                v-model="form.email"
+                type="email"
+                required
+              />
+              <label for="email">E-mail</label>
+            </FloatLabel>
+          </div>
+
+          <!-- Senha -->
+          <div class="mb-3">
+            <FloatLabel variant="on">
+              <Password
+                fluid
+                id="password"
+                v-model="form.password"
+                toggleMask
+                :feedback="true"
+                required
+                @click.right.prevent
+                @copy.prevent
+                @paste.prevent
+              />
+              <label for="password">Senha</label>
+            </FloatLabel>
+          </div>
+
+          <!-- Confirmar Senha -->
+          <div class="mb-3">
+            <FloatLabel variant="on">
+              <Password
+                fluid
+                id="password2"
+                v-model="form.password2"
+                :invalid="form.password !== form.password2 && form.password2.length > 0"
+                :feedback="false"
+                required
+                @click.right.prevent
+                @copy.prevent
+                @paste.prevent
+              />
+              <label for="password2">Confirmar Senha</label>
+              <template v-if="form.password !== form.password2 && form.password2.length > 0">
+                <Message severity="error" size="small" variant="simple">
+                  Senhas não coincidem
+                </Message>
+              </template>
+            </FloatLabel>
+          </div>
+
+          <!-- Botão -->
+          <Button
+            type="submit"
+            :loading="loading"
+            label="Criar Conta"
+            icon="pi pi-sign-in"
+            class="w-full mt-3"
+          />
+        </form>
+
+        <div class="mt-4 flex items-center justify-center gap-2">
+          <Message severity="secondary" size="small" variant="simple">
+            Have an account?
+          </Message>
+
+          <Button
+            severity="info"
+            variant="text"
+            size="small"
+            asChild
+            v-slot="slotProps"
+          >
+            <RouterLink to="/login" :class="slotProps.class">Login</RouterLink>
+          </Button>
         </div>
-
-        <!-- Senha -->
-        <div class="mb-3">
-          <FloatLabel variant="on">
-            <Password
-              fluid
-              id="password"
-              v-model="form.password"
-              toggleMask
-              :feedback="true"
-              required
-              @click.right.prevent
-              @copy.prevent
-              @paste.prevent
-            />
-            <label for="password">Senha</label>
-          </FloatLabel>
-        </div>
-
-        <!-- Senha -->
-        <div class="mb-3">
-          <FloatLabel variant="on">
-            <Password
-              fluid
-              id="password2"
-              v-model="form.password2"
-              :invalid="
-                form.password !== form.password2 && form.password2.length > 0
-              "
-              :feedback="false"
-              required
-              @click.right.prevent
-              @copy.prevent
-              @paste.prevent
-            />
-            <template
-              v-if="
-                form.password !== form.password2 && form.password2.length > 0
-              "
-            >
-              <Message severity="error" size="small" variant="simple">
-                Senhas não coincidem
-              </Message>
-            </template>
-
-            <label for="password2">Confirmar Senha</label>
-          </FloatLabel>
-        </div>
-
-        <!-- Botão -->
-        <Button
-          type="submit"
-          :loading="loading"
-          label="Criar Conta"
-          icon="pi pi-sign-in"
-          class="w-full mt-3"
-        />
-      </form>
-
-      <div class="mt-4 flex items-center justify-center gap-2">
-        <Message severity="secondary" size="small" variant="simple">
-          Have a account?
-        </Message>
-
-        <Button
-          severity="info"
-          variant="text"
-          size="small"
-          asChild
-          v-slot="slotProps"
-        >
-          <RouterLink to="/login" :class="slotProps.class">Login</RouterLink>
-        </Button>
-      </div>
-    </div>
+      </template>
+    </Card>
   </div>
 </template>
 
-
 <script>
+import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import Password from "primevue/password";
 import Button from "primevue/button";
 import FloatLabel from "primevue/floatlabel";
 import Message from "primevue/message";
+import api from "@/api";
 
 export default {
-  components: { InputText, Password, Button, FloatLabel, Message },
+  components: { Card, InputText, Password, Button, FloatLabel, Message },
   data() {
     return {
       form: {
@@ -120,10 +118,23 @@ export default {
     async onFormeSubmit() {
       this.loading = true;
       this.errorMessage = "";
+
+      if (this.form.password !== this.form.password2) {
+        this.$toast.add({
+          severity: "warn",
+          summary: "Senhas não coincidem",
+          detail: "Verifique se a senha e a confirmação estão iguais.",
+          life: 3000,
+        });
+        this.loading = false;
+        return;
+      }
+
       const data = {
         email: this.form.email,
         password: this.form.password,
       };
+
       try {
         await api.post("/users/", data);
         this.$toast.add({
@@ -133,7 +144,6 @@ export default {
           life: 3000,
         });
 
-        // redireciona (caso use vue-router)
         this.$router.push("/");
       } catch (e) {
         this.$toast.add({

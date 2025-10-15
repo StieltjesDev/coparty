@@ -1,79 +1,82 @@
 <template>
-  <div class="flex justify-content-center align-items-center">
-    <div class="card p-4 shadow-8 border-round-lg">
-      <h2 class="text-center mb-4">Login</h2>
+  <div class="flex justify-content-center align-items-center p-3">
+    <Card class="sm:w-full shadow-4">
+      <template #title>
+        <h2 class="text-center mb-4">Login</h2>
+      </template>
 
-      <form @submit.prevent="onFormeSubmit">
-        <!-- E-mail -->
-        <div class="mb-3">
-          <FloatLabel variant="on">
-            <InputText
-              fluid
-              id="email"
-              v-model="form.email"
-              type="email"
-              required
-            />
-            <label for="email">E-mail</label>
-          </FloatLabel>
+      <template #content>
+        <form @submit.prevent="onFormeSubmit">
+          <!-- E-mail -->
+          <div class="mb-3">
+            <FloatLabel variant="on">
+              <InputText
+                fluid
+                id="email"
+                v-model="form.email"
+                type="email"
+                required
+              />
+              <label for="email">E-mail</label>
+            </FloatLabel>
+          </div>
+
+          <!-- Senha -->
+          <div class="mb-3">
+            <FloatLabel variant="on">
+              <Password
+                fluid
+                id="password"
+                v-model="form.password"
+                toggleMask
+                :feedback="false"
+                required
+              />
+              <label for="password">Senha</label>
+            </FloatLabel>
+          </div>
+
+          <!-- Botão -->
+          <Button
+            type="submit"
+            :loading="loading"
+            label="Entrar"
+            icon="pi pi-sign-in"
+            class="w-full mt-3"
+          />
+        </form>
+
+        <div class="mt-4 flex items-center justify-center gap-2">
+          <Message severity="secondary" size="small" variant="simple">
+            First time?
+          </Message>
+
+          <Button
+            severity="info"
+            variant="text"
+            size="small"
+            asChild
+            v-slot="slotProps"
+          >
+            <RouterLink to="/signup" :class="slotProps.class">Signup</RouterLink>
+          </Button>
         </div>
-
-        <!-- Senha -->
-        <div class="mb-3">
-          <FloatLabel variant="on">
-            <Password
-              fluid
-              id="password"
-              v-model="form.password"
-              toggleMask
-              :feedback="false"
-              required
-            />
-            <label for="password">Senha</label>
-          </FloatLabel>
-        </div>
-
-        <!-- Botão -->
-        <Button
-          type="submit"
-          :loading="loading"
-          label="Entrar"
-          icon="pi pi-sign-in"
-          class="w-full mt-3"
-        />
-      </form>
-
-      <div class="mt-4 flex items-center justify-center gap-2">
-        <Message severity="secondary" size="small" variant="simple">
-          First time?
-        </Message>
-
-        <Button
-          severity="info"
-          variant="text"
-          size="small"
-          asChild
-          v-slot="slotProps"
-        >
-          <RouterLink to="/signup" :class="slotProps.class">Signup</RouterLink>
-        </Button>
-      </div>
-    </div>
+      </template>
+    </Card>
   </div>
 </template>
 
-
 <script>
+import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import Password from "primevue/password";
 import Button from "primevue/button";
 import FloatLabel from "primevue/floatlabel";
 import Message from "primevue/message";
-
 import api from "@/api";
 
 export default {
-  components: { InputText, Password, Button, FloatLabel, Message },
+  components: { Card, InputText, Password, Button, FloatLabel, Message },
   data() {
     return {
       form: {
@@ -98,7 +101,6 @@ export default {
           life: 3000,
         });
 
-        // redireciona (caso use vue-router)
         this.$router.push("/");
       } catch (e) {
         this.$toast.add({

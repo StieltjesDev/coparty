@@ -1,10 +1,5 @@
 <template>
   <div class="p-4">
-    <div class="flex justify-content-between align-items-center mb-4">
-      <h2>Meus Decks</h2>
-      <Button label="Novo Deck" icon="pi pi-plus" @click="goToCreateDeck" />
-    </div>
-
     <DataTable
       :value="decks"
       paginator
@@ -15,14 +10,9 @@
       class="w-full shadow-2 border-round"
     >
       <template #header>
-        <div class="flex justify-content-end">
-          <span class="p-input-icon-left">
-            <i class="pi pi-search" />
-            <InputText
-              v-model="filters.global.value"
-              placeholder="Buscar deck..."
-            />
-          </span>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="text-xl font-bold">Meus Decks</span>
+          <Button label="Novo Deck" icon="pi pi-plus" @click="goToCreateDeck" />
         </div>
       </template>
 
