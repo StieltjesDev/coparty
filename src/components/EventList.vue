@@ -115,7 +115,7 @@ export default {
         });
 
         // redireciona (caso use vue-router)
-        this.$router.push("/");
+        this.$router.push("#/");
       } catch (e) {
         this.$toast.add({
           severity: "error",

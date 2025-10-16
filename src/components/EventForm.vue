@@ -229,7 +229,7 @@ export default {
           })
         }
 
-        this.$router.push('/')
+        this.$router.push('#/')
       } catch (e) {
         this.$toast.add({
           severity: 'error',
@@ -253,7 +253,7 @@ export default {
           detail: 'O evento foi removido com sucesso.',
           life: 3000,
         })
-        this.$router.push('/')
+        this.$router.push('#/')
       } catch (e) {
         this.$toast.add({
           severity: 'error',
