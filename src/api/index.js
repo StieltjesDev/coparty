@@ -14,7 +14,7 @@ api.interceptors.response.use(
     // Se o back retornar 401 (não autenticado)
     if (error.response && error.response.status === 401) {
       // Redireciona o usuário pro login
-      window.location.href = '/login'
+      window.location.href = '#/login'
     }
     return Promise.reject(error)
   }
