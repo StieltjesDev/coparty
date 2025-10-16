@@ -101,7 +101,7 @@ export default {
           life: 3000,
         });
 
-        this.$router.push("#/");
+        this.$router.push("/");
       } catch (e) {
         this.$toast.add({
           severity: "error",

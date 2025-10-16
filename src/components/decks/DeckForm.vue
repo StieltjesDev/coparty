@@ -219,7 +219,7 @@ export default {
           });
         }
 
-        this.$router.push("#/decks");
+        this.$router.push("/decks");
       } catch (err) {
         console.error("Erro ao salvar deck", err);
         this.$toast.add({
@@ -233,7 +233,7 @@ export default {
       }
     },
     back() {
-      this.$router.push("#/decks");
+      this.$router.push("/decks");
     },
     async onDelete() {
       if (!confirm("Tem certeza que deseja deletar este deck?")) return;
@@ -247,7 +247,7 @@ export default {
           detail: "O deck foi removido com sucesso.",
           life: 3000,
         });
-        this.$router.push("#/decks");
+        this.$router.push("/decks");
       } catch (err) {
         console.error("Erro ao deletar deck", err);
         this.$toast.add({

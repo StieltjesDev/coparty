@@ -29,9 +29,9 @@ router.beforeEach(async (to, from, next) => {
     try {
       const res = await api.get('/users/check-auth')
       if (res.status === 200) next()
-      else next('/#/login')
+      else next('/login')
     } catch {
-      next('/#/login')
+      next('/login')
     }
   } else next()
 })
