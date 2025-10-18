@@ -21,6 +21,20 @@
             </FloatLabel>
           </div>
 
+          <!-- NickName -->
+          <div class="mb-3">
+            <FloatLabel variant="on">
+              <InputText
+                fluid
+                id="nickname"
+                v-model="form.nickname"
+                type="text"
+                required
+              />
+              <label for="nickname">Nickname</label>
+            </FloatLabel>
+          </div>
+
           <!-- Senha -->
           <div class="mb-3">
             <FloatLabel variant="on">
@@ -107,6 +121,7 @@ export default {
     return {
       form: {
         email: "",
+        nickname: "",        
         password: "",
         password2: "",
       },
@@ -132,6 +147,7 @@ export default {
 
       const data = {
         email: this.form.email,
+        name: this.form.nickname,
         password: this.form.password,
       };
 
