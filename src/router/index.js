@@ -1,10 +1,10 @@
 import { createRouter, createWebHashHistory  } from 'vue-router'
 import api from '@/api'
 
-import LoginForm from '../components/LoginForm.vue'
-import EventForm from '../components/EventForm.vue'
-import Signup from '../components/Signup.vue'
-import EventList from '../components/EventList.vue'
+import LoginForm from '../components/login/LoginForm.vue'
+import EventForm from '../components/event/EventForm.vue'
+import Signup from '../components/login/Signup.vue'
+import EventList from '../components/event/EventList.vue'
 import DeckForm from '../components/decks/DeckForm.vue'
 import DeckList from '../components/decks/DeckList.vue'
 

@@ -1,45 +1,37 @@
 <template>
-  <div class="p-4">
-    <DataTable
-      :value="decks"
-      paginator
-      :rows="5"
-      dataKey="_id"
-      :globalFilterFields="['name', 'format']"
-      v-model:filters="filters"
-      class="w-full shadow-2 border-round"
-    >
-      <template #header>
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <span class="text-xl font-bold">Meus Decks</span>
-          <Button label="Novo Deck" icon="pi pi-plus" @click="goToCreateDeck" />
-        </div>
+  <DataTable
+    :value="decks"
+    paginator
+    :rows="5"
+    dataKey="_id"
+    :globalFilterFields="['name', 'format']"
+    v-model:filters="filters"
+    class="w-full shadow-2 border-round"
+  >
+    <template #header>
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <span class="text-xl font-bold">Meus Decks</span>
+        <Button label="Novo Deck" icon="pi pi-plus" @click="goToCreateDeck" />
+      </div>
+    </template>
+
+    <Column field="name" header="Nome" sortable></Column>
+
+    <Column header="Ações" bodyClass="text-center" style="width: 150px">
+      <template #body="{ data }">
+        <Button
+          icon="pi pi-pencil"
+          class="p-button-rounded p-button-info mr-2"
+          @click="editDeck(data._id)"
+        />
+        <Button
+          icon="pi pi-trash"
+          class="p-button-rounded p-button-danger"
+          @click="deleteDeck(data._id)"
+        />
       </template>
-
-      <Column field="name" header="Nome" sortable></Column>
-      <Column field="commander" header="Comandante"></Column>
-      <Column field="createdAt" header="Criado em">
-        <template #body="{ data }">
-          {{ formatDate(data.createdAt) }}
-        </template>
-      </Column>
-
-      <Column header="Ações" bodyClass="text-center" style="width: 150px">
-        <template #body="{ data }">
-          <Button
-            icon="pi pi-pencil"
-            class="p-button-rounded p-button-info mr-2"
-            @click="editDeck(data._id)"
-          />
-          <Button
-            icon="pi pi-trash"
-            class="p-button-rounded p-button-danger"
-            @click="deleteDeck(data._id)"
-          />
-        </template>
-      </Column>
-    </DataTable>
-  </div>
+    </Column>
+  </DataTable>
 </template>
 
 <script>

@@ -165,7 +165,7 @@ export default {
         this.$toast.add({
           severity: "error",
           summary: "Erro no cadastro",
-          detail: "Erro ao fazer cadastro. Tente novamente mais tarde.",
+          detail: e.response?.data?.message || "Ocorreu um erro ao tentar cadastrar.",
           life: 3000,
         });
         console.error(e);

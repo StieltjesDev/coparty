@@ -8,8 +8,8 @@
         :key="event._id"
         class="col-12 sm:col-6 md:col-4 lg:col-3"
       >
-        <Card  class="h-full shadow-3 border-round-lg">
-          <template  #title>
+        <Card class="h-full shadow-3 border-round-lg">
+          <template #title>
             <a class="link-hover" @click="goToEvent(event._id)">
               {{ event.name }}
             </a>
@@ -32,31 +32,27 @@
               style="font-size: 0.8rem"
             >
               <i class="pi pi-map-marker"></i>
-              <span>{{ event.local ? event.local : "Não informado"}}</span>
+              <span>{{ event.local ? event.local : "Não informado" }}</span>
             </label>
             <label
               class="flex align-items-center gap-2 mb-1"
               style="font-size: 0.8rem"
             >
               <i class="pi pi-users"></i>
-              <span>{{event.qntPlayers ? event.qntPlayers : 0}} Players</span>
+              <span>{{ event.qntPlayers ? event.qntPlayers : 0 }} Players</span>
             </label>
           </template>
 
           <template #footer>
-            <div class="grid w-full">
-              <div class="col-6"></div>
-              <div class="col-6">
-                <Button
+            <div style="justify-self: end">
+              <Button
                 :loading="loading"
-                  size="small"
-                  label="Registrar-se"
-                  icon="pi pi-user-plus"
-                  @click="joinEvent(event._id)"
-                  class="w-full"
-                  severity="success"
-                />
-              </div>
+                size="small"
+                label="Registrar-se"
+                icon="pi pi-user-plus"
+                @click="joinEvent(event._id)"
+                severity="success"
+              />
             </div>
           </template>
         </Card>
@@ -120,7 +116,7 @@ export default {
         this.$toast.add({
           severity: "error",
           summary: "Erro ao se registrar",
-          detail: "Erro ao se registrar. Tente novamente mais tarde.",
+          detail: e.response?.data?.error || "Erro ao se registrar. Tente novamente mais tarde.",
           life: 3000,
         });
         console.error(e);
@@ -133,7 +129,7 @@ export default {
 </script>
 
 <style scoped>
-  .link-hover {
+.link-hover {
   text-decoration: none;
   cursor: pointer;
   transition: color 0.2s ease;

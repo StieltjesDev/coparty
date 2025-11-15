@@ -234,7 +234,7 @@ export default {
         this.$toast.add({
           severity: 'error',
           summary: 'Erro',
-          detail: 'Erro ao salvar evento. Tente novamente.',
+          detail: e.response?.data?.message || 'Erro ao salvar evento. Tente novamente.',
           life: 3000,
         })
         console.error(e)
