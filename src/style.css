@@ -1,9 +1,156 @@
-/* O site inteiro ocupa a tela */
-html, body {
+html,
+body,
+#app {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
 }
 
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(56, 189, 248, 0.18), transparent 30%),
+    linear-gradient(180deg, #0f172a 0%, #111827 55%, #172033 100%);
+  color: #e5e7eb;
+}
+
+:root {
+  --app-surface: rgba(15, 23, 42, 0.82);
+  --app-surface-border: rgba(148, 163, 184, 0.2);
+  --app-surface-strong: rgba(30, 41, 59, 0.9);
+  --app-text: #e5e7eb;
+  --app-text-soft: #cbd5e1;
+  --app-accent: #38bdf8;
+  --app-accent-strong: #0ea5e9;
+}
+
+a {
+  color: inherit;
+}
+
+.app-panel {
+  background: var(--app-surface);
+  border: 1px solid var(--app-surface-border);
+  border-radius: 20px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+}
+
+.auth-shell,
+.page-shell {
+  width: 100%;
+  min-height: calc(100vh - 180px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.page-shell {
+  width: min(100%, 56rem);
+}
+
+.page-shell--wide {
+  width: min(100%, 78rem);
+}
+
+.auth-card {
+  width: min(100%, 28rem);
+}
+
+.page-card {
+  width: min(100%, 52rem);
+}
+
+.auth-card :deep(.p-card),
+.form-card :deep(.p-card) {
+  background: var(--app-surface-strong);
+  border: 1px solid var(--app-surface-border);
+  border-radius: 24px;
+  color: var(--app-text);
+  box-shadow: 0 30px 80px rgba(2, 6, 23, 0.35);
+}
+
+.auth-card :deep(.p-card-title),
+.auth-card :deep(.p-card-content),
+.auth-card :deep(label),
+.auth-card :deep(.p-message-text),
+.form-card :deep(.p-card-title),
+.form-card :deep(.p-card-content),
+.form-card :deep(label) {
+  color: var(--app-text);
+}
+
+.auth-card :deep(.p-inputtext),
+.auth-card :deep(.p-password-input),
+.form-card :deep(.p-inputtext),
+.form-card :deep(.p-password-input),
+.form-card :deep(.p-textarea),
+.form-card :deep(.p-select),
+.form-card :deep(.p-datepicker-input) {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  color: var(--app-text);
+}
+
+.auth-card :deep(.p-inputtext:enabled:focus),
+.auth-card :deep(.p-password-input:enabled:focus),
+.form-card :deep(.p-inputtext:enabled:focus),
+.form-card :deep(.p-password-input:enabled:focus),
+.form-card :deep(.p-textarea:enabled:focus),
+.form-card :deep(.p-select:focus-within),
+.form-card :deep(.p-datepicker:focus-within) {
+  border-color: var(--app-accent);
+  box-shadow: 0 0 0 0.18rem rgba(56, 189, 248, 0.16);
+}
+
+.auth-card :deep(.p-button:not(.p-button-text)),
+.form-card :deep(.p-button:not(.p-button-text)),
+.table-surface :deep(.p-button:not(.p-button-text)) {
+  background: linear-gradient(135deg, var(--app-accent) 0%, var(--app-accent-strong) 100%);
+  border-color: transparent;
+}
+
+.auth-card :deep(.p-button.p-button-text) {
+  color: var(--app-accent);
+}
+
+.auth-card :deep(.p-button:hover),
+.form-card :deep(.p-button:hover),
+.table-surface :deep(.p-button:hover) {
+  filter: brightness(1.04);
+}
+
+.table-surface {
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(2, 6, 23, 0.25);
+}
+
+.table-surface :deep(.p-datatable-header),
+.table-surface :deep(.p-datatable-table-container),
+.table-surface :deep(.p-paginator),
+.table-surface :deep(.p-datatable-thead > tr > th),
+.table-surface :deep(.p-datatable-tbody > tr > td) {
+  background: var(--app-surface-strong);
+  color: var(--app-text);
+  border-color: var(--app-surface-border);
+}
+
+.table-surface :deep(.p-datatable-header) {
+  border-bottom: 1px solid var(--app-surface-border);
+}
+
+.table-surface :deep(.p-paginator-bottom) {
+  border-top: 1px solid var(--app-surface-border);
+}
+
+.auth-helper {
+  color: var(--app-text-soft);
+}
+
+.page-title {
+  color: #f8fafc;
+  letter-spacing: 0.02em;
+}

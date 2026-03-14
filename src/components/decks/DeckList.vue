@@ -1,111 +1,86 @@
 <template>
-  <DataTable
-    :value="decks"
-    paginator
-    :rows="5"
-    dataKey="_id"
-    :globalFilterFields="['name', 'format']"
-    v-model:filters="filters"
-    class="w-full shadow-2 border-round"
-  >
-    <template #header>
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <span class="text-xl font-bold">Meus Decks</span>
-        <Button label="Novo Deck" icon="pi pi-plus" @click="goToCreateDeck" />
-      </div>
-    </template>
-
-    <Column field="name" header="Nome" sortable></Column>
-
-    <Column header="Ações" bodyClass="text-center" style="width: 150px">
-      <template #body="{ data }">
-        <Button
-          icon="pi pi-pencil"
-          class="p-button-rounded p-button-info mr-2"
-          @click="editDeck(data._id)"
-        />
-        <Button
-          icon="pi pi-trash"
-          class="p-button-rounded p-button-danger"
-          @click="deleteDeck(data._id)"
-        />
+  <div class="page-shell page-shell--wide">
+    <Card class="w-full form-card">
+      <template #title>
+        <div class="flex justify-content-between align-items-center gap-3 flex-wrap">
+          <span>Meus decks</span>
+          <Button label="Novo deck" icon="pi pi-plus" @click="$router.push('/decks/create')" />
+        </div>
       </template>
-    </Column>
-  </DataTable>
+
+      <template #content>
+        <div v-if="loading" class="text-center py-4">Carregando decks...</div>
+        <Message v-else-if="!decks.length" severity="info" :closable="false">
+          Voce ainda nao cadastrou decks.
+        </Message>
+        <DataTable v-else :value="decks" dataKey="_id" stripedRows>
+          <Column field="name" header="Nome" />
+          <Column field="format" header="Formato" />
+          <Column field="commander" header="Commander" />
+          <Column header="Ativo">
+            <template #body="{ data }">{{ data.isActive ? 'Sim' : 'Nao' }}</template>
+          </Column>
+          <Column header="Acoes" style="width: 12rem">
+            <template #body="{ data }">
+              <div class="flex gap-2 justify-content-end">
+                <Button size="small" icon="pi pi-pencil" @click="$router.push(`/decks/${data._id}/edit`)" />
+                <Button size="small" icon="pi pi-trash" severity="danger" @click="removeDeck(data._id)" />
+              </div>
+            </template>
+          </Column>
+        </DataTable>
+      </template>
+    </Card>
+  </div>
 </template>
 
-<script>
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import api from "@/api";
-import Button from "primevue/button";
-import DataTable from "primevue/datatable";
-import Column from "primevue/column";
-import InputText from "primevue/inputtext";
+<script setup>
+import { onMounted, ref } from 'vue'
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+import Column from 'primevue/column'
+import DataTable from 'primevue/datatable'
+import Message from 'primevue/message'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
+import { deleteDeckById, listMyDecks } from '@/services/decks'
+import { getErrorMessage } from '@/services/error'
 
-export default {
-  components: { Button, DataTable, Column, InputText },
-  setup() {
-    const decks = ref([]);
-    const filters = ref({
-      global: { value: null, matchMode: "contains" },
-    });
+const confirm = useConfirm()
+const toast = useToast()
+const decks = ref([])
+const loading = ref(false)
 
-    const router = useRouter();
-
-    const loadDecks = async () => {
-      try {
-        const response = await api.get("/decks");
-        decks.value = response.data;
-      } catch (err) {
-        console.error("Erro ao carregar decks:", err);
-      }
-    };
-
-    const formatDate = (dateString) => {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-    };
-
-    const goToCreateDeck = () => {
-      router.push("/decks/create");
-    };
-
-    const editDeck = (id) => {
-      router.push(`/decks/edit/${id}`);
-    };
-
-    const deleteDeck = async (id) => {
-      if (confirm("Tem certeza que deseja excluir este deck?")) {
-        try {
-          await api.delete(`/decks/${id}`);
-          loadDecks();
-        } catch (err) {
-          console.error("Erro ao excluir deck:", err);
-        }
-      }
-    };
-
-    onMounted(loadDecks);
-
-    return {
-      decks,
-      filters,
-      formatDate,
-      goToCreateDeck,
-      editDeck,
-      deleteDeck,
-    };
-  },
-};
-</script>
-
-<style scoped>
-.p-input-icon-left i {
-  margin-right: 0.5rem;
+async function loadDecks() {
+  loading.value = true
+  try {
+    const { data } = await listMyDecks()
+    decks.value = data
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Erro', detail: getErrorMessage(error, 'Nao foi possivel carregar os decks.'), life: 4000 })
+  } finally {
+    loading.value = false
+  }
 }
-</style>
+
+function removeDeck(id) {
+  confirm.require({
+    message: 'Deseja remover este deck?',
+    header: 'Excluir deck',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Excluir',
+    rejectLabel: 'Cancelar',
+    accept: async () => {
+      try {
+        await deleteDeckById(id)
+        toast.add({ severity: 'success', summary: 'Deck removido', detail: 'O deck foi excluido.', life: 2500 })
+        await loadDecks()
+      } catch (error) {
+        toast.add({ severity: 'error', summary: 'Falha ao excluir', detail: getErrorMessage(error, 'Nao foi possivel excluir o deck.'), life: 4000 })
+      }
+    },
+  })
+}
+
+onMounted(loadDecks)
+</script>

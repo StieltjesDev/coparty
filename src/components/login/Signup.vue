@@ -1,178 +1,119 @@
 <template>
-  <div class="flex justify-content-center align-items-center p-3">
-    <Card class="sm:w-full shadow-4">
+  <div class="auth-shell">
+    <Card class="auth-card">
       <template #title>
-        <h2 class="text-center mb-4">Cadastrar</h2>
+        <h2 class="text-center mb-4 page-title">Criar conta</h2>
       </template>
 
       <template #content>
-        <form @submit.prevent="onFormeSubmit">
-          <!-- E-mail -->
-          <div class="mb-3">
+        <form class="flex flex-column gap-3" @submit.prevent="onSubmit">
+          <div>
             <FloatLabel variant="on">
-              <InputText
-                fluid
-                id="email"
-                v-model="form.email"
-                type="email"
-                required
-              />
-              <label for="email">E-mail</label>
+              <InputText id="username" v-model="form.username" fluid />
+              <label for="username">Usuario</label>
             </FloatLabel>
           </div>
 
-          <!-- NickName -->
-          <div class="mb-3">
+          <div>
             <FloatLabel variant="on">
-              <InputText
-                fluid
-                id="nickname"
-                v-model="form.nickname"
-                type="text"
-                required
-              />
-              <label for="nickname">Nickname</label>
+              <InputText id="email" v-model="form.email" type="email" fluid />
+              <label for="email">E-mail (opcional)</label>
             </FloatLabel>
           </div>
 
-          <!-- Senha -->
-          <div class="mb-3">
+          <div>
             <FloatLabel variant="on">
-              <Password
-                fluid
-                id="password"
-                v-model="form.password"
-                toggleMask
-                :feedback="true"
-                required
-                @click.right.prevent
-                @copy.prevent
-                @paste.prevent
-              />
+              <Password id="password" v-model="form.password" fluid toggleMask :feedback="true" />
               <label for="password">Senha</label>
             </FloatLabel>
           </div>
 
-          <!-- Confirmar Senha -->
-          <div class="mb-3">
+          <div>
             <FloatLabel variant="on">
-              <Password
-                fluid
-                id="password2"
-                v-model="form.password2"
-                :invalid="form.password !== form.password2 && form.password2.length > 0"
-                :feedback="false"
-                required
-                @click.right.prevent
-                @copy.prevent
-                @paste.prevent
-              />
-              <label for="password2">Confirmar Senha</label>
-              <template v-if="form.password !== form.password2 && form.password2.length > 0">
-                <Message severity="error" size="small" variant="simple">
-                  Senhas não coincidem
-                </Message>
-              </template>
+              <Password id="passwordConfirm" v-model="form.passwordConfirm" fluid toggleMask :feedback="false" />
+              <label for="passwordConfirm">Confirmar senha</label>
             </FloatLabel>
           </div>
 
-          <!-- Botão -->
-          <Button
-            type="submit"
-            :loading="loading"
-            label="Criar Conta"
-            icon="pi pi-sign-in"
-            class="w-full mt-3"
-          />
+          <Button type="submit" label="Cadastrar" icon="pi pi-user-plus" :loading="loading" class="w-full" />
         </form>
 
-        <div class="mt-4 flex items-center justify-center gap-2">
-          <Message severity="secondary" size="small" variant="simple">
-            Have an account?
-          </Message>
-
-          <Button
-            severity="info"
-            variant="text"
-            size="small"
-            asChild
-            v-slot="slotProps"
-          >
-            <RouterLink to="/login" :class="slotProps.class">Login</RouterLink>
-          </Button>
+        <div class="mt-4 flex justify-content-center gap-2 auth-helper">
+          <span>Ja tem conta?</span>
+          <RouterLink to="/login">Entrar</RouterLink>
         </div>
       </template>
     </Card>
   </div>
 </template>
 
-<script>
-import Card from "primevue/card";
-import InputText from "primevue/inputtext";
-import Password from "primevue/password";
-import Button from "primevue/button";
-import FloatLabel from "primevue/floatlabel";
-import Message from "primevue/message";
-import api from "@/api";
+<script setup>
+import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+import FloatLabel from 'primevue/floatlabel'
+import InputText from 'primevue/inputtext'
+import Password from 'primevue/password'
+import { useToast } from 'primevue/usetoast'
+import { login, signup } from '@/services/auth'
+import { getErrorMessage } from '@/services/error'
+import { useAuthStore } from '@/stores/auth'
+import { usePlayerStore } from '@/stores/player'
 
-export default {
-  components: { Card, InputText, Password, Button, FloatLabel, Message },
-  data() {
-    return {
-      form: {
-        email: "",
-        nickname: "",        
-        password: "",
-        password2: "",
-      },
-      loading: false,
-      errorMessage: "",
-    };
-  },
-  methods: {
-    async onFormeSubmit() {
-      this.loading = true;
-      this.errorMessage = "";
+const auth = useAuthStore()
+const playerStore = usePlayerStore()
+const router = useRouter()
+const toast = useToast()
 
-      if (this.form.password !== this.form.password2) {
-        this.$toast.add({
-          severity: "warn",
-          summary: "Senhas não coincidem",
-          detail: "Verifique se a senha e a confirmação estão iguais.",
-          life: 3000,
-        });
-        this.loading = false;
-        return;
-      }
+const loading = ref(false)
+const form = reactive({
+  username: '',
+  email: '',
+  password: '',
+  passwordConfirm: '',
+})
 
-      const data = {
-        email: this.form.email,
-        name: this.form.nickname,
-        password: this.form.password,
-      };
+async function onSubmit() {
+  if (form.password !== form.passwordConfirm) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Senha divergente',
+      detail: 'A confirmacao precisa ser igual a senha.',
+      life: 3000,
+    })
+    return
+  }
 
-      try {
-        await api.post("/users/", data);
-        this.$toast.add({
-          severity: "success",
-          summary: "Cadastro realizado!",
-          detail: "Bem-vindo!",
-          life: 3000,
-        });
+  loading.value = true
 
-        this.$router.push("/");
-      } catch (e) {
-        this.$toast.add({
-          severity: "error",
-          summary: "Erro no cadastro",
-          detail: e.response?.data?.message || "Ocorreu um erro ao tentar cadastrar.",
-          life: 3000,
-        });
-        console.error(e);
-      } finally {
-        this.loading = false;
-      }
-    },
-  },
-};
+  try {
+    await signup({
+      username: form.username,
+      email: form.email || undefined,
+      password: form.password,
+    })
+    await login({ login: form.username, password: form.password })
+    await auth.fetchSession(true)
+    playerStore.clearPlayer()
+
+    toast.add({
+      severity: 'success',
+      summary: 'Conta criada',
+      detail: 'Agora crie seu player para entrar em eventos.',
+      life: 3000,
+    })
+
+    await router.push('/profile?bootstrap=player')
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Falha no cadastro',
+      detail: getErrorMessage(error, 'Nao foi possivel criar a conta.'),
+      life: 4000,
+    })
+  } finally {
+    loading.value = false
+  }
+}
 </script>

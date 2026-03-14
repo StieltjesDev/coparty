@@ -1,141 +1,84 @@
 <template>
-  <div class="p-4 w-full">
-    <h2 class="text-center mb-4">Eventos</h2>
+  <div class="page-shell page-shell--wide">
+    <div class="w-full flex flex-column gap-4">
+      <div class="flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+          <h2 class="m-0 page-title">Eventos</h2>
+          <small class="text-color-secondary">Acompanhe torneios 1v1 e Commander multiplayer.</small>
+        </div>
+        <Button label="Criar evento" icon="pi pi-plus" @click="$router.push('/events/create')" />
+      </div>
 
-    <div class="grid">
-      <div
-        v-for="event in events"
-        :key="event._id"
-        class="col-12 sm:col-6 md:col-4 lg:col-3"
-      >
-        <Card class="h-full shadow-3 border-round-lg">
-          <template #title>
-            <a class="link-hover" @click="goToEvent(event._id)">
-              {{ event.name }}
-            </a>
-          </template>
-
-          <template #subtitle>
-            {{ event.gamemode }}
-          </template>
-
-          <template #content>
-            <label
-              class="flex align-items-center gap-2 mb-1"
-              style="font-size: 0.8rem"
-            >
-              <i class="pi pi-calendar"></i>
-              <span>{{ formatDate(event.dateTime) }}</span>
-            </label>
-            <label
-              class="flex align-items-center gap-2 mb-1"
-              style="font-size: 0.8rem"
-            >
-              <i class="pi pi-map-marker"></i>
-              <span>{{ event.local ? event.local : "Não informado" }}</span>
-            </label>
-            <label
-              class="flex align-items-center gap-2 mb-1"
-              style="font-size: 0.8rem"
-            >
-              <i class="pi pi-users"></i>
-              <span>{{ event.qntPlayers ? event.qntPlayers : 0 }} Players</span>
-            </label>
-          </template>
-
-          <template #footer>
-            <div style="justify-self: end">
-              <Button
-                :loading="loading"
-                size="small"
-                label="Registrar-se"
-                icon="pi pi-user-plus"
-                @click="joinEvent(event._id)"
-                severity="success"
-              />
-            </div>
-          </template>
-        </Card>
+      <div v-if="loading" class="text-center py-5">Carregando eventos...</div>
+      <Message v-else-if="!events.length" severity="info" :closable="false">
+        Nenhum evento encontrado. Crie o primeiro evento do beta para iniciar os testes.
+      </Message>
+      <div v-else class="grid">
+        <div v-for="event in events" :key="event._id" class="col-12 md:col-6 xl:col-4">
+          <Card class="event-card h-full">
+            <template #title>
+              <div class="flex justify-content-between align-items-center gap-2 flex-wrap">
+                <span>{{ event.name }}</span>
+                <Tag :value="event.status" :severity="event.status === 'SCHEDULED' ? 'info' : event.status === 'ONGOING' ? 'success' : 'contrast'" />
+              </div>
+            </template>
+            <template #subtitle>
+              <div class="flex gap-2 flex-wrap">
+                <Tag :value="event.gameMode" severity="warn" />
+                <Tag v-if="isOrganizer(event)" value="Organizador" severity="success" />
+              </div>
+            </template>
+            <template #content>
+              <div class="flex flex-column gap-2">
+                <span><strong>Data:</strong> {{ formatDateTime(event.dateTime) }}</span>
+                <span><strong>Pareamento:</strong> {{ event.pairingType }}</span>
+                <span><strong>Inscritos:</strong> {{ event.qntPlayers || 0 }}</span>
+                <span><strong>Descricao:</strong> {{ event.description || 'Sem descricao' }}</span>
+              </div>
+            </template>
+            <template #footer>
+              <Button label="Ver evento" icon="pi pi-arrow-right" class="w-full" @click="$router.push(`/events/${event._id}`)" />
+            </template>
+          </Card>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import Card from "primevue/card";
-import Button from "primevue/button";
-import api from "@/api";
+<script setup>
+import { onMounted, ref } from 'vue'
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+import Message from 'primevue/message'
+import Tag from 'primevue/tag'
+import { listEvents } from '@/services/events'
+import { getErrorMessage } from '@/services/error'
+import { useToast } from 'primevue/usetoast'
+import { useAuthStore } from '@/stores/auth'
 
-export default {
-  components: { Card, Button },
-  data() {
-    return {
-      events: [],
-      loading: false,
-    };
-  },
-  async mounted() {
-    try {
-      const response = await api.get("/events");
-      this.events = response.data;
-    } catch (err) {
-      console.error("Erro ao carregar eventos", err);
-      this.$toast.add({
-        severity: "error",
-        summary: "Erro",
-        detail: "Não foi possível carregar os eventos.",
-        life: 3000,
-      });
-    }
-  },
-  methods: {
-    formatDate(dateString) {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-    },
-    goToEvent(id) {
-      this.$router.push(`/events/${id}`);
-    },
-    async joinEvent(id) {
-      try {
-        await api.post("/events/" + id);
-        this.$toast.add({
-          severity: "success",
-          summary: "Cadastro realizado!",
-          detail: "Bem-vindo!",
-          life: 3000,
-        });
+const auth = useAuthStore()
+const toast = useToast()
+const loading = ref(false)
+const events = ref([])
 
-        // redireciona (caso use vue-router)
-        this.$router.push("/");
-      } catch (e) {
-        this.$toast.add({
-          severity: "error",
-          summary: "Erro ao se registrar",
-          detail: e.response?.data?.error || "Erro ao se registrar. Tente novamente mais tarde.",
-          life: 3000,
-        });
-        console.error(e);
-      } finally {
-        this.loading = false;
-      }
-    },
-  },
-};
+function formatDateTime(value) {
+  return value ? new Date(value).toLocaleString('pt-BR') : '-'
+}
+
+function isOrganizer(event) {
+  return auth.state.user?.id && auth.state.user.id === event.createdByUserId
+}
+
+onMounted(async () => {
+  loading.value = true
+  try {
+    const { data } = await listEvents()
+    events.value = data
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Erro', detail: getErrorMessage(error, 'Nao foi possivel carregar os eventos.'), life: 4000 })
+  } finally {
+    loading.value = false
+  }
+})
 </script>
-
-<style scoped>
-.link-hover {
-  text-decoration: none;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.link-hover:hover {
-  color: #555; /* escurece no hover */
-}
-</style>

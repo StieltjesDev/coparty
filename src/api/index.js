@@ -1,21 +1,29 @@
-// src/api/index.js
 import axios from 'axios'
 
-// Cria uma instância configurada do Axios
+let unauthorizedHandler = null
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
-  withCredentials: true // 🔑 envia os cookies automaticamente
+  withCredentials: true,
 })
 
-// Intercepta respostas
+export function setUnauthorizedHandler(handler) {
+  unauthorizedHandler = handler
+}
+
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // Se o back retornar 401 (não autenticado)
-    if (error.response && error.response.status === 401) {
-      // Redireciona o usuário pro login
-      window.location.href = '#/login'
+  async (error) => {
+    const status = error.response?.status
+    const message = error.response?.data?.error?.message
+    const shouldHandleUnauthorized = status === 401 || (
+      status === 403 && ['Token nao fornecido', 'Token invalido', 'Nao autenticado'].includes(message)
+    )
+
+    if (shouldHandleUnauthorized && unauthorizedHandler) {
+      await unauthorizedHandler(error)
     }
+
     return Promise.reject(error)
   }
 )

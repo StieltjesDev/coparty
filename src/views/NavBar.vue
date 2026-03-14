@@ -1,37 +1,32 @@
 <template>
   <Menubar :model="items" class="custom-menubar transparent-menubar">
-    <!-- LOGO / NOME -->
     <template #start>
       <div class="flex items-center gap-2 pl-4">
-        <span class="font-semibold text-white text-lg">CoParty</span>
+        <span class="font-semibold text-white text-lg">Coparty</span>
+        <Tag v-if="auth.state.user?.role === 'admin'" value="Admin" severity="danger" rounded />
       </div>
     </template>
 
-    <!-- LINKS -->
     <template #item="{ item, props }">
-      <RouterLink
-        v-if="item.to"
-        :to="item.to"
-        v-bind="props.action"
-        class="nav-link"
-      >
+      <RouterLink v-if="item.to" :to="item.to" v-bind="props.action" class="nav-link">
         {{ item.label }}
       </RouterLink>
-      <a v-else href="#" v-bind="props.action" class="nav-link">
-        {{ item.label }}
-      </a>
+      <a v-else href="#" v-bind="props.action" class="nav-link">{{ item.label }}</a>
     </template>
 
-    <!-- PERFIL -->
     <template #end>
-      <div class="flex items-center pr-4">
+      <div class="flex items-center gap-2 pr-4 text-white">
+        <span v-if="auth.state.user" class="text-sm hidden md:block">{{ auth.state.user.username }}</span>
+        <Button icon="pi pi-user" @click="$router.push('/profile')" severity="contrast" rounded variant="outlined" class="icon-btn" />
         <Button
-          icon="pi pi-user"
-          @click="$router.push('/perfil')"
+          v-if="auth.state.isAuthenticated"
+          icon="pi pi-sign-out"
+          @click="logout"
           severity="contrast"
           rounded
           variant="outlined"
           class="icon-btn"
+          :loading="loggingOut"
         />
       </div>
     </template>
@@ -39,20 +34,67 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import Menubar from 'primevue/menubar'
 import Button from 'primevue/button'
+import Tag from 'primevue/tag'
+import { useToast } from 'primevue/usetoast'
+import { getErrorMessage } from '@/services/error'
+import { useAuthStore } from '@/stores/auth'
 
-const items = ref([
-  { label: 'Home', to: '/' },
-  { label: 'My Events', to: '/events' },
-  { label: 'Create Event', to: '/create' },
-  { label: 'My Decks', to: '/decks' }
-])
+const auth = useAuthStore()
+const router = useRouter()
+const toast = useToast()
+const loggingOut = ref(false)
+
+const items = computed(() => {
+  if (!auth.state.isAuthenticated) {
+    return [
+      { label: 'Login', to: '/login' },
+      { label: 'Cadastro', to: '/signup' },
+    ]
+  }
+
+  const base = [
+    { label: 'Eventos', to: '/events' },
+    { label: 'Decks', to: '/decks' },
+    { label: 'Ranking Players', to: '/rankings/players' },
+    { label: 'Ranking Decks', to: '/rankings/decks' },
+  ]
+
+  if (auth.state.user?.role === 'admin') {
+    base.push({ label: 'Admin', to: '/admin' })
+  }
+
+  return base
+})
+
+async function logout() {
+  loggingOut.value = true
+  try {
+    await auth.logout()
+    toast.add({
+      severity: 'success',
+      summary: 'Sessao encerrada',
+      detail: 'Voce foi redirecionado para o login.',
+      life: 2500,
+    })
+    await router.push('/login')
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Falha ao sair',
+      detail: getErrorMessage(error, 'Nao foi possivel encerrar a sessao.'),
+      life: 4000,
+    })
+  } finally {
+    loggingOut.value = false
+  }
+}
 </script>
 
 <style scoped>
-/* === NAVBAR TRANSPARENTE === */
 .transparent-menubar {
   background: transparent !important;
   border: none !important;
@@ -65,7 +107,6 @@ const items = ref([
   z-index: 10;
 }
 
-/* Força todos os wrappers internos a herdarem transparência */
 :deep(.p-menubar),
 :deep(.p-menubar-start),
 :deep(.p-menubar-end),
@@ -77,7 +118,6 @@ const items = ref([
   box-shadow: none !important;
 }
 
-/* === LINKS === */
 .nav-link {
   color: white;
   font-weight: 600;
@@ -88,12 +128,12 @@ const items = ref([
   display: flex;
   align-items: center;
 }
+
 .nav-link:hover {
   background-color: rgba(255, 255, 255, 0.15);
   color: #cbd5e1;
 }
 
-/* === BOTÃO PERFIL === */
 .icon-btn {
   color: white !important;
   border-color: white !important;
