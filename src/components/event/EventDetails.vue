@@ -67,14 +67,14 @@
           <Message v-else-if="!registrationOpen" severity="secondary" :closable="false">{{ registrationClosedMessage }}</Message>
           <Message v-else-if="!myDecks.length && !myEntry" severity="warn" :closable="false">Voce precisa cadastrar pelo menos um deck antes de entrar no evento.</Message>
           <div v-else-if="myEntry" class="flex flex-column gap-3">
-            <div class="app-highlight app-highlight--success">
+            <div :class="['app-highlight', myEntry.status === 'DROPPED' ? '' : 'app-highlight--success']">
               <div>
-                <span class="app-highlight-label">Inscricao confirmada</span>
-                <strong class="app-highlight-title">Voce ja esta neste evento</strong>
+                <span class="app-highlight-label">{{ myEntry.status === 'DROPPED' ? 'Inscricao encerrada' : 'Inscricao confirmada' }}</span>
+                <strong class="app-highlight-title">{{ myEntry.status === 'DROPPED' ? 'Voce foi dropado deste evento' : 'Voce ja esta neste evento' }}</strong>
               </div>
               <p class="app-highlight-copy">Deck atual: <strong>{{ myEntry.deckId?.name || myEntry.deckId }}</strong>.</p>
             </div>
-            <div class="flex justify-content-end">
+            <div v-if="myEntry.status !== 'DROPPED'" class="flex justify-content-end">
               <Button label="Cancelar inscricao" severity="danger" :loading="joining" :disabled="!registrationOpen" @click="leaveCurrentEvent" />
             </div>
           </div>
@@ -111,7 +111,21 @@
               <Column header="Formato">
                 <template #body="{ data }">{{ formatDeckFormat(data.deckId?.format) }}</template>
               </Column>
-              <Column field="status" header="Status" />
+              <Column header="Status">
+                <template #body="{ data }">{{ formatEntryStatus(data.status) }}</template>
+              </Column>
+              <Column v-if="canManageEvent" header="Acoes" style="width: 9rem">
+                <template #body="{ data }">
+                  <Button
+                    v-if="canDropEntry(data)"
+                    size="small"
+                    label="Drop"
+                    severity="warning"
+                    :loading="droppingEntryId === data._id"
+                    @click="dropCurrentEntry(data)"
+                  />
+                </template>
+              </Column>
             </DataTable>
           </div>
         </template>
@@ -197,7 +211,7 @@ import Message from 'primevue/message'
 import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
-import { DECK_FORMAT_LABELS, EVENT_GAME_MODE_LABELS, EVENT_PAIRING_LABELS, EVENT_STATUS_LABELS } from '@/constants/options'
+import { DECK_FORMAT_LABELS, EVENT_ENTRY_STATUS_LABELS, EVENT_GAME_MODE_LABELS, EVENT_PAIRING_LABELS, EVENT_STATUS_LABELS } from '@/constants/options'
 import { listMyDecks } from '@/services/decks'
 import { getErrorMessage } from '@/services/error'
 import {
@@ -212,6 +226,7 @@ import {
   getStandings,
   joinEvent,
   leaveEvent,
+  dropEventEntry as dropEventEntryRequest,
   startEvent as startEventRequest,
 } from '@/services/events'
 import { useAuthStore } from '@/stores/auth'
@@ -226,6 +241,7 @@ const loadingEvent = ref(false)
 const joining = ref(false)
 const roundLoading = ref(false)
 const actionLoading = ref(false)
+const droppingEntryId = ref(null)
 const event = ref(null)
 const entries = ref([])
 const standings = ref([])
@@ -294,6 +310,16 @@ function formatDateTime(value) {
 
 function formatDeckFormat(value) {
   return DECK_FORMAT_LABELS[value] || value || 'Formato livre'
+}
+
+function formatEntryStatus(value) {
+  return EVENT_ENTRY_STATUS_LABELS[value] || value || '-'
+}
+
+function canDropEntry(entry) {
+  return canManageEvent.value
+    && ['DRAFT', 'SCHEDULED', 'ONGOING'].includes(event.value?.status)
+    && entry?.status !== 'DROPPED'
 }
 
 function isDeckCompatible(deck) {
@@ -396,6 +422,25 @@ async function leaveCurrentEvent() {
     toast.add({ severity: 'error', summary: 'Falha ao sair', detail: getErrorMessage(error, 'Nao foi possivel cancelar a inscricao.'), life: 4000 })
   } finally {
     joining.value = false
+  }
+}
+
+async function dropCurrentEntry(entry) {
+  if (!canDropEntry(entry)) return
+
+  const confirmed = window.confirm(`Deseja aplicar drop em ${entry.playerId?.displayName || 'este inscrito'}? Ele saira dos proximos pareamentos, mas continuara nos standings.`)
+  if (!confirmed) return
+
+  droppingEntryId.value = entry._id
+  try {
+    await dropEventEntryRequest(route.params.id, entry._id)
+    toast.add({ severity: 'success', summary: 'Drop aplicado', detail: 'O inscrito nao sera pareado nas proximas rodadas.', life: 3000 })
+    await refreshEntriesAndStandings()
+    await loadRoundMatches()
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Falha ao aplicar drop', detail: getErrorMessage(error, 'Nao foi possivel aplicar drop nesta inscricao.'), life: 4000 })
+  } finally {
+    droppingEntryId.value = null
   }
 }
 

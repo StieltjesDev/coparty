@@ -28,6 +28,10 @@ export function leaveEvent(eventId) {
   return api.delete(`/events/${eventId}/entries/me`)
 }
 
+export function dropEventEntry(eventId, entryId) {
+  return api.patch(`/events/${eventId}/entries/${entryId}/drop`)
+}
+
 export function getEventEntries(eventId) {
   return api.get(`/events/${eventId}/entries`)
 }

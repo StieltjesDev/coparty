@@ -60,3 +60,10 @@ export const MATCH_STATUS_OPTIONS = [
   { label: 'Concluida', value: 'COMPLETED' },
   { label: 'Cancelada', value: 'CANCELLED' },
 ]
+
+export const EVENT_ENTRY_STATUS_LABELS = {
+  REGISTERED: 'Inscrito',
+  CHECKED_IN: 'Confirmado',
+  DROPPED: 'Dropado',
+  DISQUALIFIED: 'Desclassificado',
+}
