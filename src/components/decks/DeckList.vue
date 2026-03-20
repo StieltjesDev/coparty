@@ -9,11 +9,20 @@
       </template>
 
       <template #content>
+        <div class="app-highlight app-highlight--accent mb-4">
+          <div>
+            <span class="app-highlight-label">Colecao</span>
+            <strong class="app-highlight-title">{{ decks.length }} deck(s) no seu arsenal</strong>
+          </div>
+          <p class="app-highlight-copy">Desative decks que voce quer preservar sem expor nas inscricoes e reative quando quiser voltar a usar.</p>
+        </div>
+
         <div v-if="loading" class="text-center py-4">Carregando decks...</div>
         <Message v-else-if="!decks.length" severity="info" :closable="false">
           Voce ainda nao cadastrou decks.
         </Message>
-        <DataTable v-else :value="decks" dataKey="_id" stripedRows>
+        <div v-else class="table-surface">
+          <DataTable :value="decks" dataKey="_id" stripedRows>
           <Column field="name" header="Nome" />
           <Column field="format" header="Formato" />
           <Column field="commander" header="Commander" />
@@ -24,11 +33,18 @@
             <template #body="{ data }">
               <div class="flex gap-2 justify-content-end">
                 <Button size="small" icon="pi pi-pencil" @click="$router.push(`/decks/${data._id}/edit`)" />
-                <Button size="small" icon="pi pi-trash" severity="danger" @click="removeDeck(data._id)" />
+                <Button
+                  size="small"
+                  :icon="data.isActive ? 'pi pi-ban' : 'pi pi-refresh'"
+                  :severity="data.isActive ? 'warn' : 'success'"
+                  v-tooltip.top="data.isActive ? 'Desativar deck' : 'Reativar deck'"
+                  @click="toggleDeckActiveState(data)"
+                />
               </div>
             </template>
           </Column>
-        </DataTable>
+          </DataTable>
+        </div>
       </template>
     </Card>
   </div>
@@ -41,10 +57,13 @@ import Card from 'primevue/card'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Message from 'primevue/message'
+import Tooltip from 'primevue/tooltip'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { deleteDeckById, listMyDecks } from '@/services/decks'
+import { listMyDecks, setDeckActiveState } from '@/services/decks'
 import { getErrorMessage } from '@/services/error'
+
+const vTooltip = Tooltip
 
 const confirm = useConfirm()
 const toast = useToast()
@@ -63,20 +82,39 @@ async function loadDecks() {
   }
 }
 
-function removeDeck(id) {
+function toggleDeckActiveState(deck) {
+  const nextIsActive = !deck.isActive
+  const actionLabel = nextIsActive ? 'reativar' : 'desativar'
+  const titleLabel = nextIsActive ? 'Reativar deck' : 'Desativar deck'
+  const successLabel = nextIsActive ? 'Deck reativado' : 'Deck desativado'
+  const successDetail = nextIsActive
+    ? 'O deck voltou a ficar disponivel para uso.'
+    : 'O deck foi marcado como inativo.'
+
   confirm.require({
-    message: 'Deseja remover este deck?',
-    header: 'Excluir deck',
+    message: nextIsActive
+      ? 'Deseja reativar este deck? Ele voltara a ficar disponivel para uso.'
+      : 'Deseja desativar este deck? Ele continuara cadastrado, mas ficara indisponivel para uso.',
+    header: titleLabel,
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Excluir',
+    acceptLabel: nextIsActive ? 'Reativar' : 'Desativar',
     rejectLabel: 'Cancelar',
     accept: async () => {
       try {
-        await deleteDeckById(id)
-        toast.add({ severity: 'success', summary: 'Deck removido', detail: 'O deck foi excluido.', life: 2500 })
+        await setDeckActiveState(
+          deck._id,
+          {
+            name: deck.name,
+            format: deck.format,
+            commander: deck.commander || null,
+            link: deck.link || null,
+          },
+          nextIsActive
+        )
+        toast.add({ severity: 'success', summary: successLabel, detail: successDetail, life: 2500 })
         await loadDecks()
       } catch (error) {
-        toast.add({ severity: 'error', summary: 'Falha ao excluir', detail: getErrorMessage(error, 'Nao foi possivel excluir o deck.'), life: 4000 })
+        toast.add({ severity: 'error', summary: `Falha ao ${actionLabel}`, detail: getErrorMessage(error, `Nao foi possivel ${actionLabel} o deck.`), life: 4000 })
       }
     },
   })

@@ -7,11 +7,11 @@
             <div>
               <div class="flex gap-2 align-items-center flex-wrap">
                 <h2 class="m-0">Match {{ match?._id }}</h2>
-                <Tag v-if="event" :value="event.gameMode" severity="warn" />
+                <Tag v-if="event" :value="eventGameModeLabel" severity="warn" />
                 <Tag v-if="match" :value="match.status" :severity="match.status === 'COMPLETED' ? 'success' : match.status === 'PENDING' ? 'info' : 'warn'" />
                 <Tag v-if="canManage" :value="auth.state.user?.role === 'admin' ? 'Admin' : 'Organizador'" :severity="auth.state.user?.role === 'admin' ? 'danger' : 'success'" />
               </div>
-              <small>Mesa {{ match?.tableNumber || '-' }} • Rodada {{ match?.round || '-' }}</small>
+              <small>Mesa {{ match?.tableNumber || '-' }} ï¿½ Rodada {{ match?.round || '-' }}</small>
             </div>
             <div class="flex gap-2 flex-wrap">
               <Button label="Voltar ao evento" severity="secondary" @click="$router.push(`/events/${match?.eventId}`)" :disabled="!match" />
@@ -23,14 +23,33 @@
         <template #content>
           <div v-if="loading" class="text-center py-4">Carregando match...</div>
           <div v-else-if="match" class="flex flex-column gap-4">
-            <DataTable :value="participantRows" dataKey="eventEntryId" stripedRows>
+            <div class="app-highlight-grid">
+              <div class="app-highlight app-highlight--accent">
+                <div>
+                  <span class="app-highlight-label">Mesa e rodada</span>
+                  <strong class="app-highlight-title">Mesa {{ match.tableNumber || '-' }} - Rodada {{ match.round || '-' }}</strong>
+                </div>
+                <p class="app-highlight-copy">Status atual: <strong>{{ match.status }}</strong>. Use esta area para revisar participantes e registrar o resultado oficial.</p>
+              </div>
+              <div class="app-highlight">
+                <div>
+                  <span class="app-highlight-label">Formato da match</span>
+                  <strong class="app-highlight-title">{{ eventGameModeLabel }}</strong>
+                </div>
+                <p class="app-highlight-copy">{{ canManage ? 'Voce pode enviar, concluir ou reabrir resultados nesta mesa.' : 'Voce esta em modo consulta e nao pode alterar o resultado.' }}</p>
+              </div>
+            </div>
+
+            <div class="table-surface">
+              <DataTable :value="participantRows" dataKey="eventEntryId" stripedRows>
               <Column field="seatOrder" header="Seat" />
               <Column field="displayName" header="Player" />
               <Column field="deckName" header="Deck" />
               <Column field="resultType" header="Resultado" />
               <Column field="placement" header="Placement" />
               <Column field="pointsEarned" header="Pontos" />
-            </DataTable>
+              </DataTable>
+            </div>
 
             <Divider />
 
@@ -108,6 +127,7 @@ import Message from 'primevue/message'
 import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
+import { EVENT_GAME_MODE_LABELS } from '@/constants/options'
 import { getErrorMessage } from '@/services/error'
 import { getEvent } from '@/services/events'
 import { getMatch, reopenMatch, submitMatchResult, updateMatchStatus } from '@/services/matches'
@@ -130,6 +150,7 @@ const canManage = computed(() => {
   return auth.state.user.role === 'admin' || auth.state.user.id === event.value.createdByUserId
 })
 
+const eventGameModeLabel = computed(() => EVENT_GAME_MODE_LABELS[event.value?.gameMode] || event.value?.gameMode || '-')
 const isCommander = computed(() => event.value?.gameMode === 'COMMANDER_MULTIPLAYER')
 
 const participantRows = computed(() => (match.value?.participants || []).map((participant) => ({

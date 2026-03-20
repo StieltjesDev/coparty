@@ -15,3 +15,7 @@ export function signup(payload) {
 export function logout() {
   return api.post('/users/logout')
 }
+
+export function updateUser(id, payload) {
+  return api.put(`/users/${id}`, payload)
+}

@@ -3,11 +3,19 @@
     <Card class="w-full form-card">
       <template #title>Ranking de decks</template>
       <template #content>
+        <div class="app-highlight app-highlight--accent mb-4">
+          <div>
+            <span class="app-highlight-label">Metagame</span>
+            <strong class="app-highlight-title">Acompanhe os decks que mais rendem resultado</strong>
+          </div>
+          <p class="app-highlight-copy">Use os filtros para observar quais listas se destacam em cada modo de jogo e formato ativo.</p>
+        </div>
+
         <div class="grid mb-3">
           <div class="col-12 md:col-4">
             <FloatLabel variant="on">
               <Select id="gameMode" v-model="filters.gameMode" :options="gameModes" optionLabel="label" optionValue="value" fluid />
-              <label for="gameMode">Game mode</label>
+              <label for="gameMode">Modo de jogo</label>
             </FloatLabel>
           </div>
           <div class="col-12 md:col-4">
@@ -22,17 +30,21 @@
         </div>
 
         <Message v-if="!rankings.length && !loading" severity="info" :closable="false">Nenhum ranking encontrado.</Message>
-        <DataTable v-else :value="rankings" dataKey="_id" stripedRows>
+        <div v-else class="table-surface">
+          <DataTable :value="rankings" dataKey="_id" stripedRows>
           <Column header="#">
             <template #body="{ index }">{{ index + 1 }}</template>
           </Column>
           <Column field="deckId.name" header="Deck" />
           <Column field="deckId.commander" header="Commander" />
-          <Column field="gameMode" header="Game mode" />
+          <Column header="Modo de jogo">
+            <template #body="{ data }">{{ eventGameModeLabels[data.gameMode] || data.gameMode }}</template>
+          </Column>
           <Column field="format" header="Formato" />
           <Column field="rating" header="Rating" />
           <Column field="matchesPlayed" header="Matches" />
-        </DataTable>
+          </DataTable>
+        </div>
       </template>
     </Card>
   </div>
@@ -47,7 +59,7 @@ import DataTable from 'primevue/datatable'
 import FloatLabel from 'primevue/floatlabel'
 import Message from 'primevue/message'
 import Select from 'primevue/select'
-import { DECK_FORMAT_OPTIONS, EVENT_GAME_MODE_OPTIONS } from '@/constants/options'
+import { DECK_FORMAT_OPTIONS, EVENT_GAME_MODE_LABELS as eventGameModeLabels, EVENT_GAME_MODE_OPTIONS } from '@/constants/options'
 import { getErrorMessage } from '@/services/error'
 import { getDeckRankings } from '@/services/rankings'
 import { useToast } from 'primevue/usetoast'

@@ -6,6 +6,14 @@
       </template>
 
       <template #content>
+        <div class="app-highlight app-highlight--accent mb-4">
+          <div>
+            <span class="app-highlight-label">Acesso rapido</span>
+            <strong class="app-highlight-title">Entre com usuario ou e-mail</strong>
+          </div>
+          <p class="app-highlight-copy">Seu nome de usuario tambem sera usado como base do display name dentro do sistema.</p>
+        </div>
+
         <form class="flex flex-column gap-3" @submit.prevent="onSubmit">
           <div>
             <FloatLabel variant="on">

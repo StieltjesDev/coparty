@@ -1,5 +1,5 @@
 import { computed, reactive } from 'vue'
-import { checkAuth, logout as logoutRequest } from '@/services/auth'
+import { checkAuth, logout as logoutRequest, updateUser as updateUserRequest } from '@/services/auth'
 import { usePlayerStore } from '@/stores/player'
 
 const state = reactive({
@@ -53,6 +53,18 @@ async function logout() {
   }
 }
 
+async function updateCurrentUser(payload) {
+  if (!state.user?.id) {
+    throw new Error('Usuario nao autenticado')
+  }
+
+  const { data } = await updateUserRequest(state.user.id, payload)
+  state.user = data ?? null
+  state.isAuthenticated = Boolean(state.user)
+  state.initialized = true
+  return state.user
+}
+
 export function useAuthStore() {
   return {
     state,
@@ -60,5 +72,6 @@ export function useAuthStore() {
     fetchSession,
     clearSession,
     logout,
+    updateCurrentUser,
   }
 }

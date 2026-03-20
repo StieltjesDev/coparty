@@ -4,9 +4,13 @@
       <template #title>Painel admin</template>
       <template #content>
         <div class="flex flex-column gap-4">
-          <Message severity="info" :closable="false">
-            Rebuild serve para reprocessar ratings a partir dos resultados persistidos. Os standings continuam derivados na leitura.
-          </Message>
+          <div class="app-highlight app-highlight--warn">
+            <div>
+              <span class="app-highlight-label">Operacao administrativa</span>
+              <strong class="app-highlight-title">Rebuild reprocessa ratings e historicos competitivos</strong>
+            </div>
+            <p class="app-highlight-copy">Use estas acoes com criterio. Elas servem para corrigir consistencia quando resultados ou estados precisarem ser recalculados.</p>
+          </div>
 
           <div class="grid">
             <div class="col-12 md:col-6 xl:col-3">

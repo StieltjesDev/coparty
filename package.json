@@ -4,10 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
+  "dev": "vite",
+  "network": "vite --host 0.0.0.0 --port 5173",
+  "build": "vite build",
+  "preview": "vite preview"
+},
   "dependencies": {
     "@primeuix/themes": "^1.2.3",
     "@primevue/forms": "^4.3.9",

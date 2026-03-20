@@ -23,6 +23,9 @@ body {
   --app-text-soft: #cbd5e1;
   --app-accent: #38bdf8;
   --app-accent-strong: #0ea5e9;
+  --app-highlight-bg: rgba(17, 30, 45, 0.92);
+  --app-highlight-border: rgba(56, 189, 248, 0.28);
+  --app-highlight-border-strong: rgba(56, 189, 248, 0.42);
 }
 
 a {
@@ -153,4 +156,101 @@ a {
 .page-title {
   color: #f8fafc;
   letter-spacing: 0.02em;
+}
+
+
+.app-highlight {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  border-radius: 22px;
+  background: var(--app-highlight-bg);
+  border: 1px solid var(--app-highlight-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.app-highlight--success {
+  border-color: rgba(34, 197, 94, 0.28);
+  background: linear-gradient(180deg, rgba(17, 30, 45, 0.96), rgba(15, 23, 42, 0.92));
+}
+
+.app-highlight--warn {
+  border-color: rgba(251, 191, 36, 0.28);
+}
+
+.app-highlight--accent {
+  border-color: var(--app-highlight-border-strong);
+}
+
+.app-highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.app-highlight-label {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: #bfdbfe;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+}
+
+.app-highlight-title {
+  display: block;
+  color: #f8fafc;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.app-highlight-copy {
+  margin: 0;
+  max-width: 26rem;
+  color: var(--app-text-soft);
+  line-height: 1.55;
+}
+
+.app-highlight-copy strong {
+  color: #f8fafc;
+}
+
+.app-surface-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.9rem;
+}
+
+.app-surface-card {
+  padding: 1rem 1.1rem;
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.58);
+  border: 1px solid rgba(56, 189, 248, 0.16);
+}
+
+.app-surface-card span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--app-text-soft);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.app-surface-card strong {
+  color: #f8fafc;
+  font-size: 1.08rem;
+}
+
+@media (max-width: 640px) {
+  .app-highlight {
+    flex-direction: column;
+  }
+
+  .app-highlight-copy {
+    max-width: none;
+  }
 }

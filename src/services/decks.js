@@ -16,6 +16,9 @@ export function updateDeck(id, payload) {
   return api.put(`/decks/${id}`, payload)
 }
 
-export function deleteDeckById(id) {
-  return api.delete(`/decks/${id}`)
+export function setDeckActiveState(id, payload, isActive) {
+  return api.put(`/decks/${id}`, {
+    ...payload,
+    isActive,
+  })
 }
