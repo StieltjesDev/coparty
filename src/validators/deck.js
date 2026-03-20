@@ -1,10 +1,20 @@
-const SUPPORTED_DECK_LINKS = [
-  'https://www.ligamagic.com.br/?view=dks/deck&id',
-  'https://moxfield.com/decks/',
-]
+const SUPPORTED_DECK_HOSTS = ['ligamagic.com.br', 'www.ligamagic.com.br', 'moxfield.com', 'www.moxfield.com']
 
 export function isSupportedDeckLink(link) {
-  return SUPPORTED_DECK_LINKS.some((prefix) => link.startsWith(prefix))
+  try {
+    const url = new URL(link)
+    if (!SUPPORTED_DECK_HOSTS.includes(url.hostname)) {
+      return false
+    }
+
+    if (url.hostname.includes('moxfield.com')) {
+      return url.pathname.startsWith('/decks/')
+    }
+
+    return url.searchParams.get('view') === 'dks/deck' && url.searchParams.has('id')
+  } catch {
+    return false
+  }
 }
 
 export function validateDeckField(field, value) {
@@ -17,9 +27,9 @@ export function validateDeckField(field, value) {
       if (value && value.length > 40) return 'Maximo de 40 caracteres.'
       return ''
     case 'link':
-      if (!value) return 'O link e obrigatorio.'
-      if (value.length > 120) return 'Maximo de 120 caracteres.'
-      if (!isSupportedDeckLink(value)) return 'O link deve ser do LigaMagic ou do Moxfield.'
+      if (!value) return ''
+      if (value.length > 500) return 'Maximo de 500 caracteres.'
+      if (!isSupportedDeckLink(value)) return 'O link deve ser um deck da LigaMagic ou do Moxfield.'
       return ''
     default:
       return ''

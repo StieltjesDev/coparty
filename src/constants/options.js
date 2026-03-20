@@ -11,6 +11,18 @@ export const EVENT_PAIRING_OPTIONS = [
   { label: 'Eliminacao dupla', value: 'DOUBLE_ELIMINATION' },
 ]
 
+export const EVENT_PAIRING_OPTIONS_BY_GAME_MODE = {
+  ONE_VS_ONE: ['SWISS', 'ROUND_ROBIN', 'SINGLE_ELIMINATION', 'DOUBLE_ELIMINATION', 'POD'],
+  COMMANDER_MULTIPLAYER: ['SWISS'],
+  TWO_HEADED_GIANT: ['SWISS'],
+  TWO_VS_TWO: ['SWISS'],
+  MULTIPLAYER_FREE_FOR_ALL: ['SWISS'],
+}
+
+export const DEFAULT_PAIRING_BY_GAME_MODE = Object.fromEntries(
+  Object.entries(EVENT_PAIRING_OPTIONS_BY_GAME_MODE).map(([gameMode, options]) => [gameMode, options[0]]),
+)
+
 export const EVENT_STATUS_LABELS = {
   DRAFT: 'Rascunho',
   SCHEDULED: 'Agendado',

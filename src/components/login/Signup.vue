@@ -11,7 +11,7 @@
             <span class="app-highlight-label">Cadastro</span>
             <strong class="app-highlight-title">Crie sua conta para liberar decks e eventos</strong>
           </div>
-          <p class="app-highlight-copy">O e-mail e opcional, mas se informado precisa ser unico. O player sera criado depois com o mesmo nome de usuario.</p>
+          <p class="app-highlight-copy">O e-mail agora e obrigatorio e precisa ser unico. O player sera criado depois com o mesmo nome de usuario.</p>
         </div>
 
         <form class="flex flex-column gap-3" @submit.prevent="onSubmit">
@@ -25,7 +25,7 @@
           <div>
             <FloatLabel variant="on">
               <InputText id="email" v-model="form.email" type="email" fluid />
-              <label for="email">E-mail (opcional)</label>
+              <label for="email">E-mail</label>
             </FloatLabel>
           </div>
 
@@ -57,7 +57,7 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import FloatLabel from 'primevue/floatlabel'
@@ -71,6 +71,7 @@ import { usePlayerStore } from '@/stores/player'
 
 const auth = useAuthStore()
 const playerStore = usePlayerStore()
+const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
@@ -83,6 +84,16 @@ const form = reactive({
 })
 
 async function onSubmit() {
+  if (!form.email.trim()) {
+    toast.add({
+      severity: 'warn',
+      summary: 'E-mail obrigatorio',
+      detail: 'Informe um e-mail valido para criar sua conta.',
+      life: 3000,
+    })
+    return
+  }
+
   if (form.password !== form.passwordConfirm) {
     toast.add({
       severity: 'warn',
@@ -98,21 +109,21 @@ async function onSubmit() {
   try {
     await signup({
       username: form.username,
-      email: form.email || undefined,
+      email: form.email.trim(),
       password: form.password,
     })
     await login({ login: form.username, password: form.password })
     await auth.fetchSession(true)
-    playerStore.clearPlayer()
+    await playerStore.fetchMyPlayer(true).catch(() => null)
 
     toast.add({
       severity: 'success',
       summary: 'Conta criada',
-      detail: 'Agora crie seu player para entrar em eventos.',
+      detail: 'Sua conta foi criada e a sessao ja esta ativa.',
       life: 3000,
     })
 
-    await router.push('/profile?bootstrap=player')
+    await router.push(route.query.redirect || '/events')
   } catch (error) {
     toast.add({
       severity: 'error',

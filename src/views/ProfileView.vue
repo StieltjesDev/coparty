@@ -75,8 +75,10 @@
                 </div>
               </div>
 
-              <Message severity="secondary" :closable="false">
-                O e-mail pode ser adicionado ou alterado desde que ainda nao exista outro igual na base.
+              <Message :severity="auth.state.user?.email ? 'secondary' : 'warn'" :closable="false">
+                {{ auth.state.user?.email
+                  ? 'O e-mail pode ser alterado desde que ainda nao exista outro igual na base.'
+                  : 'Sua conta e legada e ainda nao possui e-mail. Informe um e-mail unico para completar o perfil.' }}
               </Message>
 
               <div class="profile-actions">
@@ -210,9 +212,13 @@ async function saveUserProfile() {
   savingProfile.value = true
 
   try {
+    if (!profileForm.email.trim()) {
+      throw new Error('Informe um e-mail para salvar o perfil.')
+    }
+
     const updatedUser = await auth.updateCurrentUser({
       username: profileForm.username,
-      email: profileForm.email || null,
+      email: profileForm.email.trim(),
     })
 
     profileForm.username = updatedUser?.username || ''

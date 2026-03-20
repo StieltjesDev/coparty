@@ -35,9 +35,12 @@
 
           <div>
             <FloatLabel variant="on">
-              <InputText id="link" v-model="form.link" fluid />
+              <InputText id="link" v-model="form.link" fluid placeholder="https://www.ligamagic.com.br/?view=dks/deck&id=9815199 ou https://moxfield.com/decks/bkQDoobmiEGDyMqXZ8JYSQ" />
               <label for="link">Link (opcional)</label>
             </FloatLabel>
+            <small class="text-color-secondary">Aceita apenas links de deck da LigaMagic ou do Moxfield.</small>
+            <Message v-if="linkError" severity="error" :closable="false" class="mt-2">{{ linkError }}</Message>
+            <small v-if="showLinkHint" class="block text-color-secondary mt-2">Use um link no formato de deck publicado. Exemplos: LigaMagic com <code>?view=dks/deck&id=...</code> ou Moxfield com <code>/decks/...</code>.</small>
           </div>
 
           <div class="flex gap-2 justify-content-end flex-wrap">
@@ -67,12 +70,14 @@ import Button from 'primevue/button'
 import Card from 'primevue/card'
 import FloatLabel from 'primevue/floatlabel'
 import InputText from 'primevue/inputtext'
+import Message from 'primevue/message'
 import Select from 'primevue/select'
 import Tooltip from 'primevue/tooltip'
 import { useConfirm } from 'primevue/useconfirm'
 import { DECK_FORMAT_OPTIONS } from '@/constants/options'
 import { createDeck, getDeck, setDeckActiveState, updateDeck } from '@/services/decks'
 import { getErrorMessage } from '@/services/error'
+import { validateDeckField } from '@/validators/deck'
 import { useToast } from 'primevue/usetoast'
 
 const vTooltip = Tooltip
@@ -82,6 +87,7 @@ const router = useRouter()
 const confirm = useConfirm()
 const toast = useToast()
 const loading = ref(false)
+const attemptedSubmit = ref(false)
 const form = reactive({
   name: '',
   format: 'MODERN',
@@ -91,12 +97,15 @@ const form = reactive({
 })
 
 const isEditMode = computed(() => Boolean(route.params.id))
-const showCommanderField = computed(() => ['COMMANDER', 'COMMANDER_DUEL'].includes(form.format))
+const isCommanderFormat = (format) => String(format || '').startsWith('COMMANDER')
+const showCommanderField = computed(() => isCommanderFormat(form.format))
+const linkError = computed(() => attemptedSubmit.value ? validateDeckField('link', form.link) : '')
+const showLinkHint = computed(() => Boolean(linkError.value) && form.link.trim().length > 0)
 
 watch(
   () => form.format,
   (format) => {
-    if (!['COMMANDER', 'COMMANDER_DUEL'].includes(format)) {
+    if (!isCommanderFormat(format)) {
       form.commander = ''
     }
   }
@@ -121,8 +130,13 @@ onMounted(async () => {
 })
 
 async function saveDeck() {
+  attemptedSubmit.value = true
   loading.value = true
   try {
+    if (linkError.value) {
+      throw new Error(linkError.value)
+    }
+
     const payload = {
       name: form.name,
       format: form.format,
@@ -185,3 +199,4 @@ function toggleDeckActiveState() {
   })
 }
 </script>
+

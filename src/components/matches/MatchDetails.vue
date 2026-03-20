@@ -8,15 +8,40 @@
               <div class="flex gap-2 align-items-center flex-wrap">
                 <h2 class="m-0">Match {{ match?._id }}</h2>
                 <Tag v-if="event" :value="eventGameModeLabel" severity="warn" />
-                <Tag v-if="match" :value="match.status" :severity="match.status === 'COMPLETED' ? 'success' : match.status === 'PENDING' ? 'info' : 'warn'" />
-                <Tag v-if="canManage" :value="auth.state.user?.role === 'admin' ? 'Admin' : 'Organizador'" :severity="auth.state.user?.role === 'admin' ? 'danger' : 'success'" />
+                <Tag
+                  v-if="match"
+                  :value="match.status"
+                  :severity="match.status === 'COMPLETED' ? 'success' : match.status === 'PENDING' ? 'info' : 'warn'"
+                />
+                <Tag
+                  v-if="canManage"
+                  :value="auth.state.user?.role === 'admin' ? 'Admin' : 'Organizador'"
+                  :severity="auth.state.user?.role === 'admin' ? 'danger' : 'success'"
+                />
               </div>
-              <small>Mesa {{ match?.tableNumber || '-' }} � Rodada {{ match?.round || '-' }}</small>
+              <small>Mesa {{ match?.tableNumber || '-' }} • Rodada {{ match?.round || '-' }}</small>
             </div>
             <div class="flex gap-2 flex-wrap">
-              <Button label="Voltar ao evento" severity="secondary" @click="$router.push(`/events/${match?.eventId}`)" :disabled="!match" />
-              <Button v-if="canManage && match?.status === 'COMPLETED'" label="Reabrir match" severity="warn" @click="reopenCurrentMatch" :loading="actionLoading" />
-              <Button v-if="canManage && match?.status !== 'COMPLETED'" label="Marcar completa" severity="success" @click="completeCurrentMatch" :loading="actionLoading" />
+              <Button
+                label="Voltar ao evento"
+                severity="secondary"
+                @click="$router.push(`/events/${match?.eventId}`)"
+                :disabled="!match"
+              />
+              <Button
+                v-if="canManage && match?.status === 'COMPLETED'"
+                label="Reabrir match"
+                severity="warn"
+                @click="reopenCurrentMatch"
+                :loading="actionLoading"
+              />
+              <Button
+                v-if="canManage && match?.status !== 'COMPLETED'"
+                label="Marcar completa"
+                severity="success"
+                @click="completeCurrentMatch"
+                :loading="actionLoading"
+              />
             </div>
           </div>
         </template>
@@ -29,25 +54,35 @@
                   <span class="app-highlight-label">Mesa e rodada</span>
                   <strong class="app-highlight-title">Mesa {{ match.tableNumber || '-' }} - Rodada {{ match.round || '-' }}</strong>
                 </div>
-                <p class="app-highlight-copy">Status atual: <strong>{{ match.status }}</strong>. Use esta area para revisar participantes e registrar o resultado oficial.</p>
+                <p class="app-highlight-copy">
+                  Status atual: <strong>{{ match.status }}</strong>. Use esta area para revisar participantes e registrar o resultado oficial.
+                </p>
               </div>
               <div class="app-highlight">
                 <div>
                   <span class="app-highlight-label">Formato da match</span>
                   <strong class="app-highlight-title">{{ eventGameModeLabel }}</strong>
                 </div>
-                <p class="app-highlight-copy">{{ canManage ? 'Voce pode enviar, concluir ou reabrir resultados nesta mesa.' : 'Voce esta em modo consulta e nao pode alterar o resultado.' }}</p>
+                <p class="app-highlight-copy">
+                  {{ canManage ? 'Voce pode enviar, concluir ou reabrir resultados nesta mesa.' : 'Voce esta em modo consulta e nao pode alterar o resultado.' }}
+                </p>
               </div>
             </div>
 
             <div class="table-surface">
               <DataTable :value="participantRows" dataKey="eventEntryId" stripedRows>
-              <Column field="seatOrder" header="Seat" />
-              <Column field="displayName" header="Player" />
-              <Column field="deckName" header="Deck" />
-              <Column field="resultType" header="Resultado" />
-              <Column field="placement" header="Placement" />
-              <Column field="pointsEarned" header="Pontos" />
+                <Column field="seatOrder" header="Mesa" />
+                <Column field="displayName" header="Player" />
+                <Column field="deckName" header="Deck" />
+                <Column header="Resultado">
+                  <template #body="{ data }">
+                    <div class="flex align-items-center gap-2">
+                      <span v-if="data.isByeCandidate || data.resultType === 'BYE'" class="bye-dot" aria-hidden="true"></span>
+                      <span>{{ data.resultTypeLabel }}</span>
+                    </div>
+                  </template>
+                </Column>
+                <Column field="pointsEarned" header="Pontos" />
               </DataTable>
             </div>
 
@@ -61,48 +96,40 @@
               <Message severity="info" :closable="false">Apenas organizador do evento ou admin pode lancar resultado.</Message>
             </div>
 
-            <div v-else-if="isCommander" class="flex flex-column gap-3">
-              <h3 class="m-0">Resultado Commander</h3>
-              <Message severity="secondary" :closable="false">Informe placement unico para cada player. Placement 1 define o vencedor.</Message>
-              <div v-for="participant in resultForm" :key="participant.eventEntryId" class="grid align-items-end">
-                <div class="col-12 md:col-3"><strong>{{ participant.label }}</strong></div>
-                <div class="col-12 md:col-3">
-                  <FloatLabel variant="on">
-                    <InputNumber :inputId="`placement-${participant.eventEntryId}`" v-model="participant.placement" :min="1" fluid />
-                    <label :for="`placement-${participant.eventEntryId}`">Placement</label>
-                  </FloatLabel>
-                </div>
-                <div class="col-12 md:col-3">
-                  <FloatLabel variant="on">
-                    <InputNumber :inputId="`points-${participant.eventEntryId}`" v-model="participant.pointsEarned" :min="0" fluid />
-                    <label :for="`points-${participant.eventEntryId}`">Pontos</label>
-                  </FloatLabel>
-                </div>
-                <div class="col-12 md:col-3">
-                  <FloatLabel variant="on">
-                    <InputNumber :inputId="`elims-${participant.eventEntryId}`" v-model="participant.eliminations" :min="0" fluid />
-                    <label :for="`elims-${participant.eventEntryId}`">Eliminations</label>
-                  </FloatLabel>
-                </div>
-              </div>
-              <div class="flex justify-content-end">
-                <Button label="Enviar resultado" icon="pi pi-send" :loading="actionLoading" @click="submitCommanderResult" :disabled="match.status === 'COMPLETED'" />
-              </div>
-            </div>
-
             <div v-else class="flex flex-column gap-3">
-              <h3 class="m-0">Resultado 1v1</h3>
-              <Message severity="secondary" :closable="false">Selecione o vencedor ou marque empate. Depois finalize a match.</Message>
-              <FloatLabel variant="on">
-                <Select id="winner" v-model="selectedWinner" :options="winnerOptions" optionLabel="label" optionValue="value" fluid :disabled="isDraw || match.status === 'COMPLETED'" />
-                <label for="winner">Vencedor</label>
-              </FloatLabel>
-              <div class="flex align-items-center gap-2">
-                <Checkbox inputId="draw" v-model="isDraw" binary :disabled="match.status === 'COMPLETED'" />
-                <label for="draw">Empate</label>
-              </div>
+              <h3 class="m-0">Resultado oficial</h3>
+              <Message severity="secondary" :closable="false">
+                Pontuacao fixa de torneio Magic: vitoria e bye valem 3 pontos, empate vale 1 e derrota vale 0. Esses valores nao podem ser alterados.
+              </Message>
+              <Message v-if="hasBye" severity="info" :closable="false">
+                Esta mesa tem bye. Ao enviar o resultado, o participante recebe bye oficial com 3 pontos.
+              </Message>
+              <template v-else>
+                <FloatLabel variant="on">
+                  <Select
+                    id="winner"
+                    v-model="selectedWinner"
+                    :options="winnerOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    fluid
+                    :disabled="isDraw || match.status === 'COMPLETED'"
+                  />
+                  <label for="winner">Vencedor</label>
+                </FloatLabel>
+                <div class="flex align-items-center gap-2">
+                  <Checkbox inputId="draw" v-model="isDraw" binary :disabled="match.status === 'COMPLETED'" />
+                  <label for="draw">Empate</label>
+                </div>
+              </template>
               <div class="flex justify-content-end">
-                <Button label="Enviar resultado" icon="pi pi-send" :loading="actionLoading" @click="submitOneVsOneResult" :disabled="match.status === 'COMPLETED'" />
+                <Button
+                  label="Enviar resultado"
+                  icon="pi pi-send"
+                  :loading="actionLoading"
+                  @click="submitOfficialResult"
+                  :disabled="match.status === 'COMPLETED'"
+                />
               </div>
             </div>
           </div>
@@ -122,7 +149,6 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Divider from 'primevue/divider'
 import FloatLabel from 'primevue/floatlabel'
-import InputNumber from 'primevue/inputnumber'
 import Message from 'primevue/message'
 import Select from 'primevue/select'
 import Tag from 'primevue/tag'
@@ -143,7 +169,6 @@ const match = ref(null)
 const event = ref(null)
 const isDraw = ref(false)
 const selectedWinner = ref(null)
-const resultForm = ref([])
 
 const canManage = computed(() => {
   if (!event.value || !auth.state.user) return false
@@ -151,7 +176,6 @@ const canManage = computed(() => {
 })
 
 const eventGameModeLabel = computed(() => EVENT_GAME_MODE_LABELS[event.value?.gameMode] || event.value?.gameMode || '-')
-const isCommander = computed(() => event.value?.gameMode === 'COMMANDER_MULTIPLAYER')
 
 const participantRows = computed(() => (match.value?.participants || []).map((participant) => ({
   eventEntryId: participant.eventEntryId?._id || participant.eventEntryId,
@@ -159,7 +183,8 @@ const participantRows = computed(() => (match.value?.participants || []).map((pa
   displayName: participant.eventEntryId?.playerId?.displayName || 'Participante',
   deckName: participant.eventEntryId?.deckId?.name || '-',
   resultType: participant.resultType || '-',
-  placement: participant.placement || '-',
+  resultTypeLabel: participant.resultType === 'BYE' || (!participant.resultType && hasBye.value) ? 'BYE' : participant.resultType || '-',
+  isByeCandidate: !participant.resultType && hasBye.value,
   pointsEarned: participant.pointsEarned || 0,
 })))
 
@@ -168,14 +193,11 @@ const winnerOptions = computed(() => participantRows.value.map((row) => ({
   value: row.eventEntryId,
 })))
 
-function buildCommanderDefaults() {
-  resultForm.value = participantRows.value.map((row, index) => ({
-    eventEntryId: row.eventEntryId,
-    label: row.displayName,
-    placement: index + 1,
-    pointsEarned: [5, 3, 2, 1][index] || 0,
-    eliminations: 0,
-  }))
+const hasBye = computed(() => participantRows.value.length === 1)
+
+function resetResultSelection() {
+  isDraw.value = false
+  selectedWinner.value = participantRows.value[0]?.eventEntryId || null
 }
 
 async function loadMatchPage() {
@@ -186,8 +208,7 @@ async function loadMatchPage() {
     match.value = data
     const eventResponse = await getEvent(data.eventId)
     event.value = eventResponse.data
-    selectedWinner.value = participantRows.value[0]?.eventEntryId || null
-    buildCommanderDefaults()
+    resetResultSelection()
   } catch (error) {
     toast.add({ severity: 'error', summary: 'Erro', detail: getErrorMessage(error, 'Nao foi possivel carregar a match.'), life: 4000 })
   } finally {
@@ -198,11 +219,11 @@ async function loadMatchPage() {
 async function refreshMatch() {
   const { data } = await getMatch(route.params.id)
   match.value = data
-  buildCommanderDefaults()
+  resetResultSelection()
 }
 
-async function submitOneVsOneResult() {
-  if (!isDraw.value && !selectedWinner.value) {
+async function submitOfficialResult() {
+  if (!hasBye.value && !isDraw.value && !selectedWinner.value) {
     toast.add({ severity: 'warn', summary: 'Escolha o resultado', detail: 'Informe o vencedor ou marque empate.', life: 3000 })
     return
   }
@@ -210,6 +231,18 @@ async function submitOneVsOneResult() {
   actionLoading.value = true
   try {
     const participants = participantRows.value.map((row) => {
+      if (hasBye.value) {
+        return {
+          eventEntryId: row.eventEntryId,
+          resultType: 'BYE',
+          placement: 1,
+          score: 2,
+          pointsEarned: 3,
+          isWinner: true,
+          eliminations: 0,
+        }
+      }
+
       if (isDraw.value) {
         return {
           eventEntryId: row.eventEntryId,
@@ -236,30 +269,12 @@ async function submitOneVsOneResult() {
 
     await submitMatchResult(route.params.id, participants)
     await refreshMatch()
-    toast.add({ severity: 'success', summary: 'Resultado enviado', detail: 'A match foi atualizada.', life: 2500 })
-  } catch (error) {
-    toast.add({ severity: 'error', summary: 'Falha ao enviar', detail: getErrorMessage(error, 'Nao foi possivel enviar o resultado.'), life: 4000 })
-  } finally {
-    actionLoading.value = false
-  }
-}
-
-async function submitCommanderResult() {
-  actionLoading.value = true
-  try {
-    const participants = resultForm.value.map((participant) => ({
-      eventEntryId: participant.eventEntryId,
-      resultType: participant.placement === 1 ? 'WIN' : 'LOSS',
-      placement: participant.placement,
-      score: Math.max(0, 5 - participant.placement),
-      pointsEarned: participant.pointsEarned ?? 0,
-      isWinner: participant.placement === 1,
-      eliminations: participant.eliminations ?? 0,
-    }))
-
-    await submitMatchResult(route.params.id, participants)
-    await refreshMatch()
-    toast.add({ severity: 'success', summary: 'Resultado enviado', detail: 'A mesa Commander foi atualizada.', life: 2500 })
+    toast.add({
+      severity: 'success',
+      summary: 'Resultado enviado',
+      detail: hasBye.value ? 'O bye oficial foi registrado.' : 'O resultado oficial da match foi atualizado.',
+      life: 2500,
+    })
   } catch (error) {
     toast.add({ severity: 'error', summary: 'Falha ao enviar', detail: getErrorMessage(error, 'Nao foi possivel enviar o resultado.'), life: 4000 })
   } finally {
@@ -295,3 +310,14 @@ async function reopenCurrentMatch() {
 
 onMounted(loadMatchPage)
 </script>
+
+<style scoped>
+.bye-dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 999px;
+  background: var(--p-primary-400, #38bdf8);
+  box-shadow: 0 0 0 0.18rem color-mix(in srgb, var(--p-primary-400, #38bdf8) 24%, transparent);
+  flex: 0 0 auto;
+}
+</style>

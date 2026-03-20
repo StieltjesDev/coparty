@@ -107,23 +107,46 @@
           <div v-else class="table-surface">
             <DataTable :value="entries" dataKey="_id" stripedRows>
               <Column field="playerId.displayName" header="Player" />
-              <Column field="deckId.name" header="Deck" />
+              <Column header="Deck">
+                <template #body="{ data }">
+                  <a
+                    v-if="data.deckId?.link"
+                    :href="data.deckId.link"
+                    class="event-entry-deck-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {{ data.deckId?.name || 'Deck' }}
+                  </a>
+                  <span v-else>{{ data.deckId?.name || '-' }}</span>
+                </template>
+              </Column>
               <Column header="Formato">
                 <template #body="{ data }">{{ formatDeckFormat(data.deckId?.format) }}</template>
               </Column>
               <Column header="Status">
                 <template #body="{ data }">{{ formatEntryStatus(data.status) }}</template>
               </Column>
-              <Column v-if="canManageEvent" header="Acoes" style="width: 9rem">
+              <Column v-if="canManageEvent" header="Acoes" style="width: 14rem">
                 <template #body="{ data }">
-                  <Button
-                    v-if="canDropEntry(data)"
-                    size="small"
-                    label="Drop"
-                    severity="warning"
-                    :loading="droppingEntryId === data._id"
-                    @click="dropCurrentEntry(data)"
-                  />
+                  <div class="flex gap-2 flex-wrap">
+                    <Button
+                      v-if="canRemoveEntry(data)"
+                      size="small"
+                      label="Remover"
+                      severity="danger"
+                      :loading="removingEntryId === data._id"
+                      @click="removeCurrentEntry(data)"
+                    />
+                    <Button
+                      v-if="canDropEntry(data)"
+                      size="small"
+                      label="Drop"
+                      severity="warning"
+                      :loading="droppingEntryId === data._id"
+                      @click="dropCurrentEntry(data)"
+                    />
+                  </div>
                 </template>
               </Column>
             </DataTable>
@@ -227,6 +250,7 @@ import {
   joinEvent,
   leaveEvent,
   dropEventEntry as dropEventEntryRequest,
+  removeEventEntry as removeEventEntryRequest,
   startEvent as startEventRequest,
 } from '@/services/events'
 import { useAuthStore } from '@/stores/auth'
@@ -242,6 +266,7 @@ const joining = ref(false)
 const roundLoading = ref(false)
 const actionLoading = ref(false)
 const droppingEntryId = ref(null)
+const removingEntryId = ref(null)
 const event = ref(null)
 const entries = ref([])
 const standings = ref([])
@@ -316,9 +341,15 @@ function formatEntryStatus(value) {
   return EVENT_ENTRY_STATUS_LABELS[value] || value || '-'
 }
 
+function canRemoveEntry(entry) {
+  return canManageEvent.value
+    && ['DRAFT', 'SCHEDULED'].includes(event.value?.status)
+    && entry?.status !== 'DROPPED'
+}
+
 function canDropEntry(entry) {
   return canManageEvent.value
-    && ['DRAFT', 'SCHEDULED', 'ONGOING'].includes(event.value?.status)
+    && event.value?.status === 'ONGOING'
     && entry?.status !== 'DROPPED'
 }
 
@@ -422,6 +453,25 @@ async function leaveCurrentEvent() {
     toast.add({ severity: 'error', summary: 'Falha ao sair', detail: getErrorMessage(error, 'Nao foi possivel cancelar a inscricao.'), life: 4000 })
   } finally {
     joining.value = false
+  }
+}
+
+async function removeCurrentEntry(entry) {
+  if (!canRemoveEntry(entry)) return
+
+  const confirmed = window.confirm(`Deseja remover ${entry.playerId?.displayName || 'este inscrito'} do evento? Antes do inicio ele podera sair e entrar novamente sem receber drop.`)
+  if (!confirmed) return
+
+  removingEntryId.value = entry._id
+  try {
+    await removeEventEntryRequest(route.params.id, entry._id)
+    toast.add({ severity: 'success', summary: 'Inscricao removida', detail: 'O inscrito foi removido do evento e pode entrar novamente depois.', life: 3000 })
+    await refreshEntriesAndStandings()
+    await loadRoundMatches()
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Falha ao remover inscricao', detail: getErrorMessage(error, 'Nao foi possivel remover esta inscricao.'), life: 4000 })
+  } finally {
+    removingEntryId.value = null
   }
 }
 
@@ -554,3 +604,17 @@ async function cancelCurrentEvent() {
 
 onMounted(loadEventPage)
 </script>
+
+
+<style scoped>
+.event-entry-deck-link {
+  color: #7dd3fc;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.event-entry-deck-link:hover {
+  color: #bae6fd;
+  text-decoration: underline;
+}
+</style>
