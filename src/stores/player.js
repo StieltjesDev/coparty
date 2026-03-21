@@ -45,6 +45,15 @@ async function createMyPlayer(payload) {
   return data
 }
 
+async function ensureMyPlayer() {
+  const currentPlayer = await fetchMyPlayer()
+  if (currentPlayer) {
+    return currentPlayer
+  }
+
+  return createMyPlayer({})
+}
+
 function clearPlayer() {
   state.player = null
   state.initialized = false
@@ -58,6 +67,7 @@ export function usePlayerStore() {
     hasPlayer: computed(() => Boolean(state.player)),
     fetchMyPlayer,
     createMyPlayer,
+    ensureMyPlayer,
     clearPlayer,
   }
 }

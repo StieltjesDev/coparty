@@ -21,7 +21,7 @@
 
           <div class="profile-chip">
             <span class="profile-chip__label">Player</span>
-            <Tag :value="playerStore.state.player ? 'Ativo' : 'Pendente'" :severity="playerStore.state.player ? 'success' : 'warn'" />
+            <Tag :value="playerStore.state.player ? 'Ativo' : 'Sincronizando'" :severity="playerStore.state.player ? 'success' : 'warn'" />
           </div>
         </div>
       </section>
@@ -91,7 +91,7 @@
 
         <Card class="form-card profile-card">
           <template #content>
-            <div v-if="playerStore.state.loading" class="text-center py-6">Carregando player...</div>
+            <div v-if="playerStore.state.loading || ensuringLegacyPlayer" class="text-center py-6">Carregando player...</div>
             <div v-else class="flex flex-column gap-4">
               <div class="profile-section-head">
                 <div>
@@ -123,22 +123,18 @@
                 </div>
               </div>
 
-              <form v-else class="flex flex-column gap-3" @submit.prevent="createPlayerProfile">
+              <div v-else class="flex flex-column gap-3">
                 <Message severity="warn" :closable="false">
-                  Voce ainda nao criou seu player. Sem ele, nao da para cadastrar decks nem entrar em eventos.
+                  Nao foi possivel sincronizar o player desta conta automaticamente. Tente sair e entrar novamente.
                 </Message>
 
                 <div class="profile-empty-state">
-                  <strong>Um clique para liberar o restante do sistema.</strong>
+                  <strong>Conta sem player sincronizado.</strong>
                   <p>
-                    O player sera criado automaticamente com o mesmo nome de usuario da sua conta, sem precisar preencher mais nada.
+                    Esse estado so deve ocorrer em contas antigas ou em caso de erro inesperado no cadastro.
                   </p>
                 </div>
-
-                <div class="flex justify-content-end">
-                  <Button type="submit" label="Criar player" icon="pi pi-id-card" :loading="creatingPlayer" />
-                </div>
-              </form>
+              </div>
             </div>
           </template>
         </Card>
@@ -171,7 +167,7 @@ const profileForm = reactive({
   username: '',
   email: '',
 })
-const creatingPlayer = ref(false)
+const ensuringLegacyPlayer = ref(false)
 const loggingOut = ref(false)
 const savingProfile = ref(false)
 
@@ -179,32 +175,18 @@ const profileInitial = computed(() => (auth.state.user?.username?.charAt(0) || '
 
 onMounted(async () => {
   await auth.fetchSession()
-  await playerStore.fetchMyPlayer().catch(() => null)
+  await ensurePlayerProfile()
   syncProfileForm()
 })
 
-async function createPlayerProfile() {
-  creatingPlayer.value = true
-
+async function ensurePlayerProfile() {
+  ensuringLegacyPlayer.value = true
   try {
-    await playerStore.createMyPlayer({})
-    toast.add({
-      severity: 'success',
-      summary: 'Player criado',
-      detail: 'Agora voce ja pode cadastrar decks e entrar em eventos.',
-      life: 3000,
-    })
-
-    await router.push(route.query.redirect || '/decks')
-  } catch (error) {
-    toast.add({
-      severity: 'error',
-      summary: 'Falha ao criar player',
-      detail: getErrorMessage(error, 'Nao foi possivel criar o player.'),
-      life: 4000,
-    })
+    await playerStore.ensureMyPlayer()
+  } catch {
+    await playerStore.fetchMyPlayer(true).catch(() => null)
   } finally {
-    creatingPlayer.value = false
+    ensuringLegacyPlayer.value = false
   }
 }
 
@@ -389,11 +371,6 @@ function syncProfileForm() {
   border-radius: 20px;
   background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.32));
   border: 1px solid rgba(56, 189, 248, 0.18);
-}
-
-.profile-highlight--success {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.14), rgba(15, 23, 42, 0.32));
-  border-color: rgba(34, 197, 94, 0.22);
 }
 
 .profile-highlight__label {

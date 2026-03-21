@@ -11,7 +11,6 @@
             <span class="app-highlight-label">Cadastro</span>
             <strong class="app-highlight-title">Crie sua conta para liberar decks e eventos</strong>
           </div>
-          <p class="app-highlight-copy">O e-mail agora e obrigatorio e precisa ser unico. O player sera criado depois com o mesmo nome de usuario.</p>
         </div>
 
         <form class="flex flex-column gap-3" @submit.prevent="onSubmit">
@@ -114,12 +113,12 @@ async function onSubmit() {
     })
     await login({ login: form.username, password: form.password })
     await auth.fetchSession(true)
-    await playerStore.fetchMyPlayer(true).catch(() => null)
+    await playerStore.fetchMyPlayer(true)
 
     toast.add({
       severity: 'success',
       summary: 'Conta criada',
-      detail: 'Sua conta foi criada e a sessao ja esta ativa.',
+      detail: 'Sua conta e seu player foram criados com sucesso.',
       life: 3000,
     })
 
