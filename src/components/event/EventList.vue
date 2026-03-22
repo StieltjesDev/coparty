@@ -1,12 +1,12 @@
 <template>
   <div class="page-shell page-shell--wide events-page-shell">
     <div class="w-full flex flex-column gap-5">
-      <div class="flex justify-content-between align-items-start flex-wrap gap-3">
+      <div class="events-topbar flex justify-content-between align-items-start flex-wrap gap-3">
         <div class="flex flex-column gap-2">
           <span class="events-eyebrow">Calendario competitivo</span>
           <h2 class="m-0 page-title">Eventos</h2>
         </div>
-        <Button label="Criar evento" icon="pi pi-plus" @click="$router.push('/events/create')" />
+        <Button class="events-create-btn" label="Criar evento" icon="pi pi-plus" @click="$router.push('/events/create')" />
       </div>
 
 
@@ -316,6 +316,14 @@ onMounted(async () => {
 }
 
 @media (max-width: 720px) {
+  .events-topbar {
+    align-items: stretch !important;
+  }
+
+  .events-create-btn {
+    width: 100%;
+  }
+
   .events-grid {
     grid-template-columns: 1fr;
   }
@@ -326,6 +334,24 @@ onMounted(async () => {
 
   .events-section__title {
     white-space: normal;
+  }
+
+  .event-showcase-card__body {
+    padding: 1rem;
+  }
+
+  .event-showcase-card__title {
+    font-size: 1.3rem;
+    line-height: 1.08;
+  }
+
+  .event-showcase-card__subtitle,
+  .event-meta-row {
+    font-size: 0.92rem;
+  }
+
+  .event-showcase-card__footer :deep(.p-button) {
+    width: 100%;
   }
 }
 </style>

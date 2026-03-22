@@ -3,7 +3,7 @@
     <Toast />
     <ConfirmDialog />
 
-    <header class="text-center p-3 border-bottom-1 border-gray-700 app-panel">
+    <header class="app-header text-center p-3 border-bottom-1 border-gray-700 app-panel">
       <NavBar />
     </header>
 
@@ -24,3 +24,11 @@ import Toast from 'primevue/toast'
 
 const currentYear = new Date().getFullYear()
 </script>
+
+<style scoped>
+.app-header {
+  position: relative;
+  z-index: 80;
+  overflow: visible;
+}
+</style>

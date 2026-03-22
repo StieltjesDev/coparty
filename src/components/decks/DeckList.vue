@@ -2,9 +2,9 @@
   <div class="page-shell page-shell--wide">
     <Card class="w-full form-card">
       <template #title>
-        <div class="flex justify-content-between align-items-center gap-3 flex-wrap">
+        <div class="decks-header flex justify-content-between align-items-center gap-3 flex-wrap">
           <span>Meus decks</span>
-          <Button label="Novo deck" icon="pi pi-plus" @click="$router.push('/decks/create')" />
+          <Button class="decks-header__action" label="Novo deck" icon="pi pi-plus" @click="$router.push('/decks/create')" />
         </div>
       </template>
 
@@ -122,3 +122,15 @@ function toggleDeckActiveState(deck) {
 
 onMounted(loadDecks)
 </script>
+
+<style scoped>
+@media (max-width: 640px) {
+  .decks-header {
+    align-items: stretch !important;
+  }
+
+  .decks-header__action {
+    width: 100%;
+  }
+}
+</style>

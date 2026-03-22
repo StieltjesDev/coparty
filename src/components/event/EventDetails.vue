@@ -3,7 +3,7 @@
     <div class="w-full flex flex-column gap-4">
       <Card class="form-card">
         <template #title>
-          <div class="flex justify-content-between align-items-start flex-wrap gap-3">
+          <div class="event-details-header flex justify-content-between align-items-start flex-wrap gap-3">
             <div>
               <div class="flex gap-2 align-items-center flex-wrap">
                 <h2 class="m-0">{{ event?.name || 'Evento' }}</h2>
@@ -12,7 +12,7 @@
               </div>
               <small>{{ eventGameModeLabel }} - {{ eventPairingTypeLabel }} - {{ eventFormatLabel }}</small>
             </div>
-            <div v-if="event" class="flex gap-2 flex-wrap">
+            <div v-if="event" class="event-details-header__actions flex gap-2 flex-wrap">
               <Button label="Voltar" severity="secondary" @click="$router.push('/events')" />
               <Button v-if="canEditEvent" label="Editar evento" icon="pi pi-pencil" @click="$router.push(`/events/${event._id}/edit`)" />
               <Button v-if="canStartEvent" label="Iniciar evento" icon="pi pi-play" severity="success" :loading="actionLoading" @click="startCurrentEvent" />
@@ -63,7 +63,7 @@
         <template #title>Inscricao no evento</template>
         <template #content>
           <Message v-if="!auth.state.user" severity="warn" :closable="false">Faca login para entrar no evento.</Message>
-          <Message v-else-if="!playerStore.state.player" severity="warn" :closable="false">Crie seu player antes de entrar em eventos.</Message>
+          <Message v-else-if="!playerStore.state.player" severity="warn" :closable="false">Seu player ainda esta sendo sincronizado. Tente novamente em instantes.</Message>
           <Message v-else-if="!registrationOpen" severity="secondary" :closable="false">{{ registrationClosedMessage }}</Message>
           <Message v-else-if="!myDecks.length && !myEntry" severity="warn" :closable="false">Voce precisa cadastrar pelo menos um deck antes de entrar no evento.</Message>
           <div v-else-if="myEntry" class="flex flex-column gap-3">
@@ -156,9 +156,9 @@
 
       <Card v-if="event" class="form-card">
         <template #title>
-          <div class="flex justify-content-between align-items-center flex-wrap gap-3">
+          <div class="event-rounds-toolbar flex justify-content-between align-items-center flex-wrap gap-3">
             <span>Rodadas e matches</span>
-            <div class="flex gap-2 align-items-center flex-wrap">
+            <div class="event-rounds-toolbar__actions flex gap-2 align-items-center flex-wrap">
               <FloatLabel variant="on">
                 <InputNumber id="round" v-model="selectedRound" :min="1" inputStyle="width: 6rem" />
                 <label for="round">Rodada</label>
@@ -616,5 +616,35 @@ onMounted(loadEventPage)
 .event-entry-deck-link:hover {
   color: #bae6fd;
   text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .event-details-header,
+  .event-rounds-toolbar {
+    align-items: stretch !important;
+  }
+
+  .event-details-header__actions,
+  .event-rounds-toolbar__actions {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .event-details-header__actions :deep(.p-button),
+  .event-rounds-toolbar__actions :deep(.p-button) {
+    width: 100%;
+  }
+
+  .event-rounds-toolbar__actions {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .event-rounds-toolbar__actions :deep(.p-inputnumber),
+  .event-rounds-toolbar__actions :deep(.p-floatlabel),
+  .event-rounds-toolbar__actions :deep(.p-inputnumber-input) {
+    width: 100% !important;
+  }
 }
 </style>

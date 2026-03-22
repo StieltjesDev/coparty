@@ -91,3 +91,11 @@ async function loadRankings() {
 
 onMounted(loadRankings)
 </script>
+
+<style scoped>
+@media (max-width: 640px) {
+  .grid.mb-3 {
+    margin-bottom: 1rem !important;
+  }
+}
+</style>

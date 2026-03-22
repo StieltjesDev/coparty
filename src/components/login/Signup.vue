@@ -9,7 +9,7 @@
         <div class="app-highlight app-highlight--accent mb-4">
           <div>
             <span class="app-highlight-label">Cadastro</span>
-            <strong class="app-highlight-title">Crie sua conta para liberar decks e eventos</strong>
+            <strong class="app-highlight-title">Crie sua conta para se conectar e jogar conosco!</strong>
           </div>
         </div>
 
@@ -30,7 +30,7 @@
 
           <div>
             <FloatLabel variant="on">
-              <Password id="password" v-model="form.password" fluid toggleMask :feedback="true" />
+              <Password id="password" v-model="form.password" fluid toggleMask :feedback="false" />
               <label for="password">Senha</label>
             </FloatLabel>
           </div>

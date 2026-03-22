@@ -99,7 +99,7 @@ async function logout() {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  height: 64px;
+  min-height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -116,6 +116,12 @@ async function logout() {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+}
+
+:deep(.p-menubar) {
+  width: 100%;
+  position: relative;
+  z-index: 40;
 }
 
 .nav-link {
@@ -139,5 +145,75 @@ async function logout() {
   border-color: white !important;
   width: 40px;
   height: 40px;
+}
+
+@media (max-width: 768px) {
+  .transparent-menubar {
+    min-height: 56px;
+    padding-inline: 0.2rem;
+  }
+
+  :deep(.p-menubar-root-list) {
+    gap: 0.2rem;
+  }
+
+  .nav-link {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.92rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .transparent-menubar {
+    align-items: flex-start;
+    z-index: 60;
+  }
+
+  :deep(.p-menubar) {
+    width: 100%;
+    align-items: flex-start;
+    overflow: visible !important;
+  }
+
+  :deep(.p-menubar-start) {
+    padding-left: 0.15rem;
+  }
+
+  :deep(.p-menubar-end) {
+    padding-right: 0.15rem;
+  }
+
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  :deep(.p-menubar-button) {
+    position: relative;
+    z-index: 65;
+  }
+
+  :deep(.p-menubar-root-list) {
+    position: absolute !important;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    right: 0;
+    z-index: 70;
+    padding: 0.5rem;
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.96) !important;
+    border: 1px solid rgba(148, 163, 184, 0.24) !important;
+    box-shadow: 0 22px 48px rgba(2, 6, 23, 0.45) !important;
+    backdrop-filter: blur(16px);
+  }
+
+  :deep(.p-menubar-root-list > .p-menuitem) {
+    width: 100%;
+  }
+
+  .nav-link {
+    width: 100%;
+    border-radius: 12px;
+  }
 }
 </style>

@@ -107,4 +107,10 @@ async function runAction(type) {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+@media (max-width: 640px) {
+  .result-box {
+    font-size: 0.82rem;
+  }
+}
 </style>
