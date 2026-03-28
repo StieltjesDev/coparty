@@ -21,7 +21,7 @@
         <Message v-else-if="!decks.length" severity="info" :closable="false">
           Voce ainda nao cadastrou decks.
         </Message>
-        <div v-else class="table-surface">
+        <div v-else class="desktop-table table-surface">
           <DataTable :value="decks" dataKey="_id" stripedRows>
           <Column field="name" header="Nome" />
           <Column field="format" header="Formato" />
@@ -44,6 +44,42 @@
             </template>
           </Column>
           </DataTable>
+        </div>
+        <div class="mobile-card-list">
+          <article v-for="deck in decks" :key="deck._id" class="mobile-data-card">
+            <div class="mobile-data-card__head">
+              <div>
+                <h3 class="mobile-data-card__title">{{ deck.name }}</h3>
+                <p class="mobile-data-card__subtitle">{{ deck.format }}{{ deck.commander ? ` • ${deck.commander}` : '' }}</p>
+              </div>
+            </div>
+
+            <div class="mobile-data-grid">
+              <div class="mobile-data-item">
+                <span>Formato</span>
+                <strong>{{ deck.format }}</strong>
+              </div>
+              <div class="mobile-data-item">
+                <span>Ativo</span>
+                <strong>{{ deck.isActive ? 'Sim' : 'Nao' }}</strong>
+              </div>
+              <div v-if="deck.commander" class="mobile-data-item">
+                <span>Comandante</span>
+                <strong>{{ deck.commander }}</strong>
+              </div>
+            </div>
+
+            <div class="mobile-data-card__actions">
+              <Button label="Editar" icon="pi pi-pencil" @click="$router.push(`/decks/${deck._id}/edit`)" />
+              <Button
+                :label="deck.isActive ? 'Desativar' : 'Reativar'"
+                :icon="deck.isActive ? 'pi pi-ban' : 'pi pi-refresh'"
+                :severity="deck.isActive ? 'warn' : 'success'"
+                v-tooltip.top="deck.isActive ? 'Desativar deck' : 'Reativar deck'"
+                @click="toggleDeckActiveState(deck)"
+              />
+            </div>
+          </article>
         </div>
       </template>
     </Card>
@@ -134,3 +170,4 @@ onMounted(loadDecks)
   }
 }
 </style>
+

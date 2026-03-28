@@ -69,7 +69,7 @@
               </div>
             </div>
 
-            <div class="table-surface">
+            <div class="desktop-table table-surface">
               <DataTable :value="participantRows" dataKey="eventEntryId" stripedRows>
                 <Column field="seatOrder" header="Mesa" />
                 <Column field="displayName" header="Player" />
@@ -84,6 +84,31 @@
                 </Column>
                 <Column field="pointsEarned" header="Pontos" />
               </DataTable>
+            </div>
+            <div class="mobile-card-list">
+              <article v-for="participant in participantRows" :key="participant.eventEntryId" class="mobile-data-card">
+                <div class="mobile-data-card__head">
+                  <div>
+                    <h3 class="mobile-data-card__title">{{ participant.displayName }}</h3>
+                    <p class="mobile-data-card__subtitle">{{ participant.deckName }}</p>
+                  </div>
+                </div>
+
+                <div class="mobile-data-grid">
+                  <div class="mobile-data-item">
+                    <span>Mesa</span>
+                    <strong>{{ participant.seatOrder }}</strong>
+                  </div>
+                  <div class="mobile-data-item">
+                    <span>Resultado</span>
+                    <strong>{{ participant.resultTypeLabel }}</strong>
+                  </div>
+                  <div class="mobile-data-item">
+                    <span>Pontos</span>
+                    <strong>{{ participant.pointsEarned }}</strong>
+                  </div>
+                </div>
+              </article>
             </div>
 
             <Divider />
@@ -177,7 +202,11 @@ const canManage = computed(() => {
 
 const eventGameModeLabel = computed(() => EVENT_GAME_MODE_LABELS[event.value?.gameMode] || event.value?.gameMode || '-')
 
-const participantRows = computed(() => (match.value?.participants || []).map((participant) => ({
+const rawParticipants = computed(() => match.value?.participants || [])
+
+const hasBye = computed(() => rawParticipants.value.length === 1)
+
+const participantRows = computed(() => rawParticipants.value.map((participant) => ({
   eventEntryId: participant.eventEntryId?._id || participant.eventEntryId,
   seatOrder: participant.seatOrder,
   displayName: participant.eventEntryId?.playerId?.displayName || 'Participante',
@@ -192,8 +221,6 @@ const winnerOptions = computed(() => participantRows.value.map((row) => ({
   label: row.displayName,
   value: row.eventEntryId,
 })))
-
-const hasBye = computed(() => participantRows.value.length === 1)
 
 function resetResultSelection() {
   isDraw.value = false

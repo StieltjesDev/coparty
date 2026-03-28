@@ -4,9 +4,9 @@
       <section class="profile-hero app-panel">
         <div class="profile-hero__identity">
           <div class="profile-avatar">{{ profileInitial }}</div>
-          <div class="flex flex-column gap-2">
+          <div class="profile-hero__copy flex flex-column gap-2">
             <span class="profile-eyebrow">Perfil do usuario</span>
-            <h1 class="profile-title">{{ auth.state.user?.username || 'Minha conta' }}</h1>
+            <h1 class="profile-title" :title="auth.state.user?.username || 'Minha conta'">{{ auth.state.user?.username || 'Minha conta' }}</h1>
             <p class="profile-subtitle">
               Centralize seus dados da conta e acompanhe o status do seu player sem precisar navegar por varias telas.
             </p>
@@ -43,7 +43,7 @@
               <div class="profile-highlight">
                 <div>
                   <span class="profile-highlight__label">Display name sincronizado</span>
-                  <strong>{{ auth.state.user?.username || '-' }}</strong>
+                  <strong class="profile-truncate" :title="auth.state.user?.username || '-'">{{ auth.state.user?.username || '-' }}</strong>
                 </div>
                 <small>Quando voce alterar o usuario, o player sera atualizado junto.</small>
               </div>
@@ -71,7 +71,7 @@
                 </div>
                 <div class="profile-info-card">
                   <span>E-mail atual</span>
-                  <strong>{{ auth.state.user?.email || 'Nao informado' }}</strong>
+                  <strong class="profile-truncate" :title="auth.state.user?.email || 'Nao informado'">{{ auth.state.user?.email || 'Nao informado' }}</strong>
                 </div>
               </div>
 
@@ -269,8 +269,14 @@ function syncProfileForm() {
 
 .profile-hero__identity {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 1rem;
+}
+
+.profile-hero__copy {
+  min-width: 0;
+  flex: 1;
 }
 
 .profile-avatar {
@@ -299,6 +305,9 @@ function syncProfileForm() {
   font-size: clamp(1.8rem, 4vw, 2.4rem);
   line-height: 1.05;
   color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profile-subtitle {
@@ -386,6 +395,14 @@ function syncProfileForm() {
 .profile-info-card strong,
 .profile-stat-card strong {
   color: #f8fafc;
+}
+
+.profile-truncate {
+  display: block;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profile-highlight small {

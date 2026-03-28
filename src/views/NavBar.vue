@@ -16,7 +16,7 @@
 
     <template #end>
       <div class="flex items-center gap-2 pr-4 text-white">
-        <span v-if="auth.state.user" class="text-sm hidden md:block">{{ auth.state.user.username }}</span>
+        <span v-if="auth.state.user" class="nav-username text-sm hidden md:block" :title="auth.state.user.username">{{ auth.state.user.username }}</span>
         <Button icon="pi pi-user" @click="$router.push('/profile')" severity="contrast" rounded variant="outlined" class="icon-btn" />
         <Button
           v-if="auth.state.isAuthenticated"
@@ -145,6 +145,13 @@ async function logout() {
   border-color: white !important;
   width: 40px;
   height: 40px;
+}
+
+.nav-username {
+  max-width: 14rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (max-width: 768px) {

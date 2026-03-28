@@ -30,7 +30,7 @@
         </div>
 
         <Message v-if="!rankings.length && !loading" severity="info" :closable="false">Nenhum ranking encontrado.</Message>
-        <div v-else class="table-surface">
+        <div v-else class="desktop-table table-surface">
           <DataTable :value="rankings" dataKey="_id" stripedRows>
           <Column header="#">
             <template #body="{ index }">{{ index + 1 }}</template>
@@ -43,6 +43,31 @@
           <Column field="rating" header="Rating" />
           <Column field="matchesPlayed" header="Matches" />
           </DataTable>
+        </div>
+        <div class="mobile-card-list">
+          <article v-for="(ranking, index) in rankings" :key="ranking._id" class="mobile-data-card">
+            <div class="mobile-data-card__head">
+              <div>
+                <h3 class="mobile-data-card__title">#{{ index + 1 }} {{ ranking.playerId?.displayName || 'Player' }}</h3>
+                <p class="mobile-data-card__subtitle">{{ eventGameModeLabels[ranking.gameMode] || ranking.gameMode }}</p>
+              </div>
+            </div>
+
+            <div class="mobile-data-grid">
+              <div class="mobile-data-item">
+                <span>Formato</span>
+                <strong>{{ ranking.format }}</strong>
+              </div>
+              <div class="mobile-data-item">
+                <span>Rating</span>
+                <strong>{{ ranking.rating }}</strong>
+              </div>
+              <div class="mobile-data-item">
+                <span>Matches</span>
+                <strong>{{ ranking.matchesPlayed }}</strong>
+              </div>
+            </div>
+          </article>
         </div>
       </template>
     </Card>
@@ -98,3 +123,4 @@ onMounted(loadRankings)
   }
 }
 </style>
+

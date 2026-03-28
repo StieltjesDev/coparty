@@ -104,7 +104,7 @@
         <template #title>Inscricoes</template>
         <template #content>
           <Message v-if="!entries.length" severity="info" :closable="false">Nenhum inscrito ainda.</Message>
-          <div v-else class="table-surface">
+          <div v-else class="desktop-table table-surface">
             <DataTable :value="entries" dataKey="_id" stripedRows>
               <Column field="playerId.displayName" header="Player" />
               <Column header="Deck">
@@ -151,6 +151,45 @@
               </Column>
             </DataTable>
           </div>
+          <div class="mobile-card-list">
+            <article v-for="entry in entries" :key="entry._id" class="mobile-data-card">
+              <div class="mobile-data-card__head">
+                <div>
+                  <h3 class="mobile-data-card__title">{{ entry.playerId?.displayName || 'Player' }}</h3>
+                  <p class="mobile-data-card__subtitle">{{ entry.deckId?.name || '-' }}</p>
+                </div>
+                <Tag :value="formatEntryStatus(entry.status)" :severity="entry.status === 'DROPPED' ? 'warn' : 'info'" />
+              </div>
+
+              <div class="mobile-data-grid">
+                <div class="mobile-data-item">
+                  <span>Formato</span>
+                  <strong>{{ formatDeckFormat(entry.deckId?.format) }}</strong>
+                </div>
+                <div v-if="entry.deckId?.link" class="mobile-data-item">
+                  <span>Lista</span>
+                  <a :href="entry.deckId.link" target="_blank" rel="noopener noreferrer">Abrir deck</a>
+                </div>
+              </div>
+
+              <div v-if="canManageEvent && (canRemoveEntry(entry) || canDropEntry(entry))" class="mobile-data-card__actions">
+                <Button
+                  v-if="canRemoveEntry(entry)"
+                  label="Remover"
+                  severity="danger"
+                  :loading="removingEntryId === entry._id"
+                  @click="removeCurrentEntry(entry)"
+                />
+                <Button
+                  v-if="canDropEntry(entry)"
+                  label="Drop"
+                  severity="warning"
+                  :loading="droppingEntryId === entry._id"
+                  @click="dropCurrentEntry(entry)"
+                />
+              </div>
+            </article>
+          </div>
         </template>
       </Card>
 
@@ -172,7 +211,7 @@
           <Message v-if="!canManageEvent" severity="secondary" :closable="false">Visualizacao liberada. Geracao e fechamento de rodada sao exclusivos do organizador ou admin.</Message>
           <Message v-if="!roundMatches.length" severity="info" :closable="false">Nenhuma match carregada para essa rodada.</Message>
           <div v-else class="flex flex-column gap-3">
-            <div class="table-surface">
+            <div class="desktop-table table-surface">
               <DataTable :value="roundMatches" dataKey="_id" stripedRows paginator :rows="5" :rowsPerPageOptions="[5, 10, 20]" paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown">
                 <Column field="tableNumber" header="Mesa" />
                 <Column field="status" header="Status" />
@@ -188,6 +227,21 @@
                 </Column>
               </DataTable>
             </div>
+            <div class="mobile-card-list">
+              <article v-for="match in roundMatches" :key="match._id" class="mobile-data-card">
+                <div class="mobile-data-card__head">
+                  <div>
+                    <h3 class="mobile-data-card__title">Mesa {{ match.tableNumber }}</h3>
+                    <p class="mobile-data-card__subtitle">{{ formatParticipants(match.participants) }}</p>
+                  </div>
+                  <Tag :value="match.status" :severity="match.status === 'COMPLETED' ? 'success' : 'info'" />
+                </div>
+
+                <div class="mobile-data-card__actions">
+                  <Button label="Abrir match" @click="$router.push(`/matches/${match._id}`)" />
+                </div>
+              </article>
+            </div>
             <div v-if="canManageRounds" class="flex justify-content-end">
               <Button label="Fechar rodada" icon="pi pi-check" severity="success" :loading="roundLoading" :disabled="!roundMatches.length" @click="closeSelectedRound" />
             </div>
@@ -199,9 +253,13 @@
         <template #title>Standings</template>
         <template #content>
           <Message v-if="!standings.length" severity="info" :closable="false">Ainda nao ha standings para este evento.</Message>
-          <div v-else class="table-surface">
+          <div v-else class="desktop-table table-surface">
             <DataTable :value="standings" dataKey="eventEntryId" stripedRows>
-              <Column field="position" header="#" />
+              <Column header="#">
+                <template #body="{ data }">
+                  <span class="standings-position" v-tooltip.top="data.tieBreakSummary">#{{ data.position }}</span>
+                </template>
+              </Column>
               <Column field="player.displayName" header="Player" />
               <Column field="deck.name" header="Deck" />
               <Column field="points" header="Pontos" />
@@ -209,11 +267,95 @@
               <Column field="losses" header="Losses" />
               <Column field="draws" header="Draws" />
               <Column field="byes" header="Byes" />
-              <Column field="buchholz" header="Buchholz" />
-              <Column header="OMW%">
+              <Column v-if="isCommanderEvent">
+                <template #header>
+                  <span class="standings-metric-header" v-tooltip.top="'Positive streak (wins/draws without loss)'">TB1</span>
+                </template>
+                <template #body="{ data }">{{ data.tb1Streak ?? 0 }}</template>
+              </Column>
+              <Column v-if="isCommanderEvent">
+                <template #header>
+                  <span class="standings-metric-header" v-tooltip.top="'Average final points of opponents faced'">TB2</span>
+                </template>
+                <template #body="{ data }">{{ formatNumber(data.tb2OpponentAveragePoints) }}</template>
+              </Column>
+              <Column v-if="isCommanderEvent">
+                <template #header>
+                  <span class="standings-metric-header" v-tooltip.top="'Average TB1 of opponents faced'">TB3</span>
+                </template>
+                <template #body="{ data }">{{ formatNumber(data.tb3OpponentAverageStreak) }}</template>
+              </Column>
+              <Column v-else>
+                <template #header>
+                  <span class="standings-metric-header" v-tooltip.top="'Opponent Match Win Percentage'">OMW%</span>
+                </template>
                 <template #body="{ data }">{{ formatPercent(data.opponentMatchWinRate) }}</template>
               </Column>
+              <Column v-if="!isCommanderEvent">
+                <template #header>
+                  <span class="standings-metric-header" v-tooltip.top="'Game Win Percentage'">GW%</span>
+                </template>
+                <template #body="{ data }">{{ formatPercent(data.gameWinRate) }}</template>
+              </Column>
+              <Column v-if="!isCommanderEvent">
+                <template #header>
+                  <span class="standings-metric-header" v-tooltip.top="'Opponent Game Win Percentage'">OGW%</span>
+                </template>
+                <template #body="{ data }">{{ formatPercent(data.opponentGameWinRate) }}</template>
+              </Column>
             </DataTable>
+          </div>
+          <div class="mobile-card-list">
+            <article v-for="row in standings" :key="row.eventEntryId" class="mobile-data-card">
+              <div class="mobile-data-card__head">
+                <div>
+                  <h3 class="mobile-data-card__title">
+                    <span class="standings-position" v-tooltip.top="row.tieBreakSummary">#{{ row.position }}</span>
+                    {{ row.player?.displayName || 'Player' }}
+                  </h3>
+                  <p class="mobile-data-card__subtitle">{{ row.deck?.name || '-' }}</p>
+                </div>
+              </div>
+
+              <div class="mobile-data-grid">
+                <div class="mobile-data-item">
+                  <span>Pontos</span>
+                  <strong>{{ row.points }}</strong>
+                </div>
+                <div class="mobile-data-item">
+                  <span>W-L-D</span>
+                  <strong>{{ row.wins }}-{{ row.losses }}-{{ row.draws }}</strong>
+                </div>
+                <div class="mobile-data-item">
+                  <span>Byes</span>
+                  <strong>{{ row.byes }}</strong>
+                </div>
+                <div v-if="isCommanderEvent" class="mobile-data-item">
+                  <span v-tooltip.top="'Positive streak (wins/draws without loss)'">TB1</span>
+                  <strong>{{ row.tb1Streak ?? 0 }}</strong>
+                </div>
+                <div v-if="isCommanderEvent" class="mobile-data-item">
+                  <span v-tooltip.top="'Average final points of opponents faced'">TB2</span>
+                  <strong>{{ formatNumber(row.tb2OpponentAveragePoints) }}</strong>
+                </div>
+                <div v-if="isCommanderEvent" class="mobile-data-item">
+                  <span v-tooltip.top="'Average TB1 of opponents faced'">TB3</span>
+                  <strong>{{ formatNumber(row.tb3OpponentAverageStreak) }}</strong>
+                </div>
+                <div v-if="!isCommanderEvent" class="mobile-data-item">
+                  <span v-tooltip.top="'Opponent Match Win Percentage'">OMW%</span>
+                  <strong>{{ formatPercent(row.opponentMatchWinRate) }}</strong>
+                </div>
+                <div v-if="!isCommanderEvent" class="mobile-data-item">
+                  <span v-tooltip.top="'Game Win Percentage'">GW%</span>
+                  <strong>{{ formatPercent(row.gameWinRate) }}</strong>
+                </div>
+                <div v-if="!isCommanderEvent" class="mobile-data-item">
+                  <span v-tooltip.top="'Opponent Game Win Percentage'">OGW%</span>
+                  <strong>{{ formatPercent(row.opponentGameWinRate) }}</strong>
+                </div>
+              </div>
+            </article>
           </div>
         </template>
       </Card>
@@ -233,6 +375,7 @@ import InputNumber from 'primevue/inputnumber'
 import Message from 'primevue/message'
 import Select from 'primevue/select'
 import Tag from 'primevue/tag'
+import Tooltip from 'primevue/tooltip'
 import { useToast } from 'primevue/usetoast'
 import { DECK_FORMAT_LABELS, EVENT_ENTRY_STATUS_LABELS, EVENT_GAME_MODE_LABELS, EVENT_PAIRING_LABELS, EVENT_STATUS_LABELS } from '@/constants/options'
 import { listMyDecks } from '@/services/decks'
@@ -258,6 +401,7 @@ import { usePlayerStore } from '@/stores/player'
 
 const route = useRoute()
 const toast = useToast()
+const vTooltip = Tooltip
 const auth = useAuthStore()
 const playerStore = usePlayerStore()
 
@@ -285,6 +429,7 @@ const eventStatusLabel = computed(() => EVENT_STATUS_LABELS[event.value?.status]
 const eventGameModeLabel = computed(() => EVENT_GAME_MODE_LABELS[event.value?.gameMode] || event.value?.gameMode || '-')
 const eventPairingTypeLabel = computed(() => EVENT_PAIRING_LABELS[event.value?.pairingType] || event.value?.pairingType || '-')
 const eventFormatLabel = computed(() => formatDeckFormat(event.value?.format))
+const isCommanderEvent = computed(() => event.value?.gameMode === 'COMMANDER_MULTIPLAYER')
 const eventRequiresFormat = computed(() => Boolean(event.value?.format))
 const compatibleDecks = computed(() => myDecks.value.filter((deck) => isDeckCompatible(deck)))
 const missingCompatibleDecksMessage = computed(() => eventRequiresFormat.value
@@ -369,6 +514,10 @@ function formatPercent(value) {
   return `${((value || 0) * 100).toFixed(1)}%`
 }
 
+function formatNumber(value) {
+  return Number(value || 0).toFixed(2)
+}
+
 async function loadEventPage() {
   loadingEvent.value = true
   try {
@@ -392,8 +541,11 @@ async function loadEventPage() {
     eventMatches.value = matchesResponse.data || []
     selectedDeckId.value = compatibleDecks.value[0]?._id || null
 
-    if (eventMatches.value.length && !eventMatches.value.some((match) => Number(match.round) === selectedRound.value)) {
-      selectedRound.value = Math.max(nextRoundNumber.value - 1, 1)
+    if (eventMatches.value.length) {
+      const existingRounds = eventMatches.value
+        .map((match) => Number(match.round))
+        .filter(Number.isFinite)
+      selectedRound.value = existingRounds.length ? Math.max(...existingRounds) : 1
     }
 
     await loadRoundMatches()
@@ -613,6 +765,16 @@ onMounted(loadEventPage)
   text-decoration: none;
 }
 
+.standings-metric-header {
+  cursor: help;
+  border-bottom: 1px dotted rgba(186, 230, 253, 0.45);
+}
+
+.standings-position {
+  cursor: help;
+  border-bottom: 1px dotted rgba(255, 255, 255, 0.25);
+}
+
 .event-entry-deck-link:hover {
   color: #bae6fd;
   text-decoration: underline;
@@ -648,3 +810,4 @@ onMounted(loadEventPage)
   }
 }
 </style>
+
