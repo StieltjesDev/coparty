@@ -124,8 +124,7 @@
             <div class="flex justify-content-end gap-2 flex-wrap">
               <Button type="button" label="Voltar" severity="secondary" @click="$router.push('/events')" />
               <Button v-if="isEditMode && !isLockedEvent" type="button" label="Excluir" severity="danger" @click="removeEvent" />
-              <Button v-if="!isEditMode" type="button" label="Salvar rascunho" severity="secondary" :loading="loading" @click="saveEvent(true)" />
-              <Button type="button" :label="isEditMode ? 'Salvar' : 'Agendar evento'" :loading="loading" :disabled="isLockedEvent" @click="saveEvent(false)" />
+              <Button type="button" :label="isEditMode ? 'Salvar' : 'Criar evento'" :loading="loading" :disabled="isLockedEvent" @click="saveEvent" />
             </div>
           </form>
         </template>
@@ -200,7 +199,7 @@ const form = reactive({
   gameMode: 'ONE_VS_ONE',
   maxPlayers: null,
 })
-const eventStatus = ref('DRAFT')
+const eventStatus = ref('SCHEDULED')
 
 const COMMANDER_MULTIPLAYER_FORMATS = ['COMMANDER', 'COMMANDER_500', 'COMMANDER_250', 'COMMANDER_15']
 
@@ -288,7 +287,7 @@ onMounted(async () => {
   loading.value = true
   try {
     const { data } = await getEvent(route.params.id)
-    eventStatus.value = data.status || 'DRAFT'
+    eventStatus.value = data.status || 'SCHEDULED'
     form.name = data.name || ''
     form.description = data.description || ''
     form.dateTime = data.dateTime ? new Date(data.dateTime) : null
@@ -316,7 +315,7 @@ function resolvePairingTypeForGameMode(gameMode, currentPairingType = 'SWISS') {
   return allowedPairings.includes(currentPairingType) ? currentPairingType : (DEFAULT_PAIRING_BY_GAME_MODE[gameMode] || 'SWISS')
 }
 
-async function saveEvent(isDraft = false) {
+async function saveEvent() {
   if (isLockedEvent.value) {
     toast.add({ severity: 'warn', summary: 'Edicao bloqueada', detail: 'Eventos em andamento, completos ou cancelados nao podem ser alterados.', life: 3500 })
     return
@@ -332,7 +331,7 @@ async function saveEvent(isDraft = false) {
       throw new Error('Selecione a data e hora do evento.')
     }
 
-    if (!isDraft && form.dateTime < new Date()) {
+    if (form.dateTime < new Date()) {
       throw new Error('Evento agendado precisa ter data futura.')
     }
 
@@ -347,7 +346,6 @@ async function saveEvent(isDraft = false) {
       pairingType: normalizedPairingType,
       gameMode: normalizedGameMode,
       maxPlayers: form.maxPlayers || undefined,
-      isDraft,
     }
 
     if (isEditMode.value) {
@@ -355,7 +353,7 @@ async function saveEvent(isDraft = false) {
       toast.add({ severity: 'success', summary: 'Evento atualizado', detail: 'As alteracoes foram salvas.', life: 2500 })
     } else {
       await createEvent(payload)
-      toast.add({ severity: 'success', summary: 'Evento criado', detail: isDraft ? 'O evento foi salvo como rascunho.' : 'O evento foi agendado.', life: 2500 })
+      toast.add({ severity: 'success', summary: 'Evento criado', detail: 'O evento foi agendado.', life: 2500 })
     }
 
     await router.push('/events')
@@ -538,3 +536,4 @@ function removeEvent() {
   }
 }
 </style>
+

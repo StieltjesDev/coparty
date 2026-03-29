@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
@@ -92,6 +92,15 @@ function getPostAuthTarget(redirect) {
   }
 
   return redirect
+}
+
+async function redirectIfAuthenticated() {
+  const user = await auth.fetchSession().catch(() => null)
+  if (!user) {
+    return
+  }
+
+  await router.replace(getPostAuthTarget(route.query.redirect))
 }
 
 async function onSubmit() {
@@ -146,4 +155,8 @@ async function onSubmit() {
     loading.value = false
   }
 }
+
+onMounted(() => {
+  void redirectIfAuthenticated()
+})
 </script>

@@ -24,7 +24,6 @@ export const DEFAULT_PAIRING_BY_GAME_MODE = Object.fromEntries(
 )
 
 export const EVENT_STATUS_LABELS = {
-  DRAFT: 'Rascunho',
   SCHEDULED: 'Agendado',
   ONGOING: 'Em andamento',
   FINISHED: 'Finalizado',
@@ -79,3 +78,4 @@ export const EVENT_ENTRY_STATUS_LABELS = {
   DROPPED: 'Dropado',
   DISQUALIFIED: 'Desclassificado',
 }
+

@@ -440,7 +440,7 @@ const deckOptions = computed(() => compatibleDecks.value.map((deck) => ({
   value: deck._id,
 })))
 
-const registrationOpen = computed(() => ['DRAFT', 'SCHEDULED'].includes(event.value?.status))
+const registrationOpen = computed(() => event.value?.status === 'SCHEDULED')
 const registrationClosedMessage = computed(() => {
   switch (event.value?.status) {
     case 'ONGOING':
@@ -462,7 +462,7 @@ const canEditEvent = computed(() => canManageEvent.value && registrationOpen.val
 const canManageRounds = computed(() => canManageEvent.value && event.value?.status === 'ONGOING')
 const canFinishEvent = computed(() => canManageEvent.value && event.value?.status === 'ONGOING')
 const canStartEvent = computed(() => canManageEvent.value && event.value?.status === 'SCHEDULED')
-const canCancelEvent = computed(() => canManageEvent.value && ['DRAFT', 'SCHEDULED'].includes(event.value?.status))
+const canCancelEvent = computed(() => canManageEvent.value && event.value?.status === 'SCHEDULED')
 
 const myEntry = computed(() => {
   const playerId = playerStore.state.player?._id
@@ -488,7 +488,7 @@ function formatEntryStatus(value) {
 
 function canRemoveEntry(entry) {
   return canManageEvent.value
-    && ['DRAFT', 'SCHEDULED'].includes(event.value?.status)
+    && event.value?.status === 'SCHEDULED'
     && entry?.status !== 'DROPPED'
 }
 
@@ -810,4 +810,5 @@ onMounted(loadEventPage)
   }
 }
 </style>
+
 

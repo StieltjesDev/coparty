@@ -39,8 +39,6 @@ const router = createRouter({
   routes,
 })
 
-const authOnlyRouteNames = new Set(['login', 'signup'])
-
 setUnauthorizedHandler(async () => {
   const auth = useAuthStore()
   auth.clearSession()
@@ -53,15 +51,6 @@ setUnauthorizedHandler(async () => {
 router.beforeEach(async (to) => {
   const auth = useAuthStore()
   const playerStore = usePlayerStore()
-
-  if (authOnlyRouteNames.has(to.name)) {
-    const user = await auth.fetchSession()
-    if (user) {
-      return { name: 'events-list' }
-    }
-
-    return true
-  }
 
   if (!to.meta.requiresAuth) {
     return true
