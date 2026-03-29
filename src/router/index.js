@@ -56,7 +56,9 @@ router.beforeEach(async (to) => {
     return true
   }
 
-  const user = await auth.fetchSession()
+  const user = auth.state.isAuthenticated && auth.state.user
+    ? auth.state.user
+    : await auth.fetchSession()
   if (!user) {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
@@ -66,7 +68,9 @@ router.beforeEach(async (to) => {
   }
 
   if (to.meta.requiresPlayer) {
-    const player = await playerStore.fetchMyPlayer()
+    const player = playerStore.state.player
+      ? playerStore.state.player
+      : await playerStore.fetchMyPlayer()
     if (!player) {
       return { name: 'profile', query: { bootstrap: 'player', redirect: to.fullPath } }
     }

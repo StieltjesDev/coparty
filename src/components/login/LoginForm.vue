@@ -120,3 +120,4 @@ onMounted(() => {
   void redirectIfAuthenticated()
 })
 </script>
+

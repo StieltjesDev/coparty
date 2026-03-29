@@ -11,6 +11,13 @@ const state = reactive({
 
 let pendingSessionRequest = null
 
+function setSession(user) {
+  state.user = user ?? null
+  state.isAuthenticated = Boolean(user)
+  state.initialized = true
+  return state.user
+}
+
 async function fetchSession(force = false) {
   if (pendingSessionRequest && !force) {
     return pendingSessionRequest
@@ -18,16 +25,9 @@ async function fetchSession(force = false) {
 
   state.loading = true
   pendingSessionRequest = checkAuth()
-    .then(({ data }) => {
-      state.user = data?.user ?? data ?? null
-      state.isAuthenticated = true
-      state.initialized = true
-      return state.user
-    })
+    .then(({ data }) => setSession(data?.user ?? data ?? null))
     .catch(() => {
-      state.user = null
-      state.isAuthenticated = false
-      state.initialized = true
+      setSession(null)
       return null
     })
     .finally(() => {
@@ -39,9 +39,7 @@ async function fetchSession(force = false) {
 }
 
 function clearSession() {
-  state.user = null
-  state.isAuthenticated = false
-  state.initialized = true
+  setSession(null)
   usePlayerStore().clearPlayer()
 }
 
@@ -59,16 +57,14 @@ async function updateCurrentUser(payload) {
   }
 
   const { data } = await updateUserRequest(state.user.id, payload)
-  state.user = data ?? null
-  state.isAuthenticated = Boolean(state.user)
-  state.initialized = true
-  return state.user
+  return setSession(data ?? null)
 }
 
 export function useAuthStore() {
   return {
     state,
     isAuthenticated: computed(() => state.isAuthenticated),
+    setSession,
     fetchSession,
     clearSession,
     logout,
