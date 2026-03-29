@@ -67,6 +67,18 @@ const form = reactive({
   password: '',
 })
 
+function getPostAuthTarget(redirect) {
+  if (typeof redirect !== 'string' || !redirect.trim()) {
+    return { name: 'events-list' }
+  }
+
+  if (redirect.startsWith('/login') || redirect.startsWith('/signup')) {
+    return { name: 'events-list' }
+  }
+
+  return redirect
+}
+
 async function onSubmit() {
   loading.value = true
 
@@ -82,7 +94,7 @@ async function onSubmit() {
       life: 2500,
     })
 
-    await router.push(route.query.redirect || '/events')
+    await router.replace(getPostAuthTarget(route.query.redirect))
   } catch (error) {
     toast.add({
       severity: 'error',
